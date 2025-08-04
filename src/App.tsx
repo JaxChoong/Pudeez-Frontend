@@ -1,39 +1,58 @@
-import { ConnectButton } from "@mysten/dapp-kit";
-import { Box, Container, Flex, Heading } from "@radix-ui/themes";
-import { WalletStatus } from "./WalletStatus";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
+import { ConnectButton, useCurrentAccount } from "@mysten/dapp-kit"
+import { Container, Flex, Heading } from "@radix-ui/themes"
+import { WalletStatus } from "./WalletStatus"
+import { OwnedObjects } from "./OwnedObjects"
+import Navbar from "./components/Navbar"
+import LandingPage from "./pages/LandingPage"
+import GamesPage from "./pages/GamesPage"
+import ArtPage from "./pages/ArtPage"
+import MarketplacePage from "./pages/MarketplacePage"
+import ProfilePage from "./pages/ProfilePage"
+import ChatPage from "./pages/ChatPage"
+import HistoryPage from "./pages/HistoryPage"
+import CartPage from "./pages/CartPage"
 
 function App() {
-  return (
-    <>
-      <Flex
-        position="sticky"
-        px="4"
-        py="2"
-        justify="between"
-        style={{
-          borderBottom: "1px solid var(--gray-a2)",
-        }}
-      >
-        <Box>
-          <Heading>dApp Starter Template</Heading>
-        </Box>
+  const currentAccount = useCurrentAccount()
 
-        <Box>
-          <ConnectButton />
-        </Box>
-      </Flex>
-      <Container>
-        <Container
-          mt="5"
-          pt="2"
-          px="4"
-          style={{ background: "var(--gray-a2)", minHeight: 500 }}
-        >
-          <WalletStatus />
-        </Container>
-      </Container>
-    </>
-  );
+  return (
+    <Router>
+      <div className="min-h-screen bg-black">
+        <Navbar />
+        <Routes>
+          {/* Main marketplace routes */}
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/games" element={<GamesPage />} />
+          <Route path="/art" element={<ArtPage />} />
+          <Route path="/marketplace" element={<MarketplacePage />} />
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/chat" element={<ChatPage />} />
+          <Route path="/history" element={<HistoryPage />} />
+          <Route path="/cart" element={<CartPage />} />
+
+          {/* Original dApp wallet page */}
+          <Route
+            path="/wallet"
+            element={
+              <div className="min-h-screen bg-black cyber-grid scan-lines">
+                <Container className="pt-8">
+                  <Flex direction="column" gap="2">
+                    <Heading className="neon-text-cyan font-mono">NEURAL INTERFACE</Heading>
+                    <div className="cyber-card p-6">
+                      <ConnectButton />
+                      <WalletStatus />
+                      {currentAccount && <OwnedObjects />}
+                    </div>
+                  </Flex>
+                </Container>
+              </div>
+            }
+          />
+        </Routes>
+      </div>
+    </Router>
+  )
 }
 
-export default App;
+export default App
