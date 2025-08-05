@@ -5,8 +5,6 @@ import { WalletStatus } from "./WalletStatus"
 import { OwnedObjects } from "./OwnedObjects"
 import Navbar from "./components/Navbar"
 import LandingPage from "./pages/LandingPage"
-import GamesPage from "./pages/GamesPage"
-import ArtPage from "./pages/ArtPage"
 import MarketplacePage from "./pages/MarketplacePage"
 import ProfilePage from "./pages/ProfilePage"
 import ChatPage from "./pages/ChatPage"
@@ -23,8 +21,6 @@ function App() {
         <Routes>
           {/* Main marketplace routes */}
           <Route path="/" element={<LandingPage />} />
-          <Route path="/games" element={<GamesPage />} />
-          <Route path="/art" element={<ArtPage />} />
           <Route path="/marketplace" element={<MarketplacePage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/chat" element={<ChatPage />} />

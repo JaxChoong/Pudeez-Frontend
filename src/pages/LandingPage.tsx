@@ -73,18 +73,7 @@ export default function LandingPage() {
                   className="w-full sm:w-auto neon-button-cyan px-8 py-4 text-lg font-semibold rounded-none font-mono uppercase tracking-wider transform hover:scale-105"
                 >
                   <Gamepad2 className="w-6 h-6 mr-3" />
-                  ENTER GAMES
-                  <ArrowRight className="w-5 h-5 ml-2" />
-                </Button>
-              </Link>
-
-              <Link to="/art">
-                <Button
-                  size="lg"
-                  className="w-full sm:w-auto neon-button-pink px-8 py-4 text-lg font-semibold rounded-none font-mono uppercase tracking-wider transform hover:scale-105"
-                >
-                  <Palette className="w-6 h-6 mr-3" />
-                  DIGITAL ART
+                  ENTER THE MATRIX
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </Button>
               </Link>
