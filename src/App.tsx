@@ -10,6 +10,7 @@ import ProfilePage from "./pages/ProfilePage"
 import ChatPage from "./pages/ChatPage"
 import HistoryPage from "./pages/HistoryPage"
 import CartPage from "./pages/CartPage"
+import SignUpPage from "./pages/SignUpPage"
 
 function App() {
   const currentAccount = useCurrentAccount()
@@ -26,6 +27,7 @@ function App() {
           <Route path="/chat" element={<ChatPage />} />
           <Route path="/history" element={<HistoryPage />} />
           <Route path="/cart" element={<CartPage />} />
+          <Route path="/sign-up" element={<SignUpPage />} />
 
           {/* Original dApp wallet page */}
           <Route
