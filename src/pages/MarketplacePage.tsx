@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { Input } from "@/components/ui/input"
-import { Search, List, Grid3X3, Filter, Clock, Heart, TrendingUp, Zap, ShoppingCart, Bot, Gamepad2 } from "lucide-react"
+import { Search, List, Grid3X3, Filter, Clock, Heart, TrendingUp, Zap, ShoppingCart, Bot, Gamepad2,Ban } from "lucide-react"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -214,7 +214,7 @@ export default function MarketplacePage() {
                 </div>
               </div>
               <div className="p-4">
-                <h3 className="text-lg font-semibold neon-text-cyan mb-1 font-mono" style={{ height: "3rem" }}>
+                <h3 className="text-lg font-semibold neon-text-cyan mb-1 font-mono h-12" >
                   {item.title}
                 </h3>
                 <p className="text-sm text-gray-400 mb-3 font-mono">{item.game}</p>
@@ -435,7 +435,10 @@ export default function MarketplacePage() {
           </TabsList>
           
           {filteredItems.length === 0 && (
-            <div className="text-center mt-12">No items found</div>
+            <div className="text-center mt-12 text-red-400 font-mono">
+              <Ban className="w-8 h-8 mb-2 inline-block m-2" />
+              No items found
+              </div>
           )}
           <TabsContent value="all" className="mt-8">
             <div
