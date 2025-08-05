@@ -29,7 +29,6 @@ export default function Navbar() {
   const navItems = [
     { path: "/marketplace", label: "NEXUS", icon: Search },
     { path: "/games", label: "GAMES", icon: Gamepad2 },
-    { path: "/art", label: "ART", icon: Palette },
     { path: "/chat", label: "COMM", icon: MessageCircle },
     { path: "/history", label: "LOG", icon: History },
     { path: "/profile", label: "USER", icon: User },
