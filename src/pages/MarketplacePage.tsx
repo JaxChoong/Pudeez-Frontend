@@ -248,7 +248,6 @@ export default function MarketplacePage() {
                     <ShoppingCart className="w-4 h-4" />
                   </Button>
                   <Button
-                    onClick={() => setSelectedNFTForAI(item)}
                     variant="outline"
                     className="neon-button-cyan bg-transparent w-10 h-10 p-0 flex items-center justify-center"
                   >
@@ -287,7 +286,6 @@ export default function MarketplacePage() {
               </div>
               <div className="flex gap-2">
                 <Button
-                  onClick={() => setSelectedNFTForAI(item)}
                   size="sm"
                   className="neon-button-cyan font-mono uppercase text-xs h-8 px-3"
                 >
@@ -435,7 +433,10 @@ export default function MarketplacePage() {
               BUY NOW ({filteredItems.filter((item) => !item.isAuction).length})
             </TabsTrigger>
           </TabsList>
-
+          
+          {filteredItems.length === 0 && (
+            <div className="text-center mt-12">No items found</div>
+          )}
           <TabsContent value="all" className="mt-8">
             <div
               className={viewMode === "grid" ? "grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" : "space-y-4"}
@@ -466,11 +467,13 @@ export default function MarketplacePage() {
         </Tabs>
 
         {/* Load More */}
-        <div className="text-center mt-12">
-          <Button size="lg" className="neon-button-cyan font-mono uppercase tracking-wider">
-            LOAD MORE ITEMS
-          </Button>
-        </div>
+        {filteredItems.length > 0 && viewMode === "grid" && (
+          <div className="text-center mt-12">
+            <Button size="lg" className="neon-button-cyan font-mono uppercase tracking-wider">
+              LOAD MORE ITEMS
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   )
