@@ -470,7 +470,7 @@ export default function MarketplacePage() {
         {filteredItems.length > 0 && viewMode === "grid" && (
           <div className="text-center mt-12">
             <Button size="lg" className="neon-button-cyan font-mono uppercase tracking-wider">
-              LOAD MORE ITEMS
+              DIVE DEEPER
             </Button>
           </div>
         )}
