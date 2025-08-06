@@ -3,11 +3,32 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Gamepad2 } from "lucide-react"
+import { generateNonce, generateRandomness } from '@mysten/sui/zklogin';
+import { SuiClient } from "@mysten/sui/client";
+import { Ed25519Keypair } from "@mysten/sui/keypairs/ed25519"
 
 export default function SignUpPage() {
   const handleGoogleSignUp = () => {
     // Handle Google sign up logic here
     console.log("Sign up with Google clicked")
+
+    const suiClient = new SuiClient({ url: import.meta.env.VITE_FULLNODE_URL });
+    suiClient.getLatestSuiSystemState().then(
+        (systemState) => {
+            let epoch = systemState.epoch; console.log(systemState)
+            const maxEpoch = Number(epoch) + 2; // this means the ephemeral key will be active for 2 epochs from now.
+            const ephemeralKeyPair = new Ed25519Keypair();
+            const randomness = generateRandomness();
+            const nonce = generateNonce(ephemeralKeyPair.getPublicKey(), maxEpoch, randomness);
+
+            const REDIRECT_URL = "http%3A%2F%2F127.0.0.1%3A5173%2Fauth-redirect";
+            const GOOGLE_AUTH_URL = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${import.meta.env.VITE_GOOGLE_CLIENT_ID}&response_type=id_token&redirect_uri=${REDIRECT_URL}&scope=openid&nonce=${nonce}`
+
+            window.open(GOOGLE_AUTH_URL, "_blank")
+        }
+    );
+
+    
   }
 
   return (
