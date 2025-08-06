@@ -27,31 +27,323 @@ import { Badge } from "@/components/ui/badge";
 
 export default function ProfilePage() {
   const [isFollowing, setIsFollowing] = useState(false);
+  const { isLoading: isCoverLoading, handleImageLoad: handleCoverLoad } = useImageLoading();
+  const { isLoading: isAvatarLoading, handleImageLoad: handleAvatarLoad } = useImageLoading();
   const { isLoading, handleImageLoad } = useImageLoading();
 
+  const apiReturns = {
+  "assets": [
+    {
+      "appid": 381210,
+      "contextid": "2",
+      "assetid": "3348972860985122368",
+      "classid": "2165368697",
+      "instanceid": "0",
+      "amount": "1"
+    },
+    {
+      "appid": 381210,
+      "contextid": "2",
+      "assetid": "3348972860985122369",
+      "classid": "2339867322",
+      "instanceid": "0",
+      "amount": "1"
+    },
+    {
+      "appid": 381210,
+      "contextid": "2",
+      "assetid": "3348972860985122370",
+      "classid": "2339867318",
+      "instanceid": "0",
+      "amount": "1"
+    },
+    {
+      "appid": 381210,
+      "contextid": "2",
+      "assetid": "3348972860985122371",
+      "classid": "2339867317",
+      "instanceid": "0",
+      "amount": "1"
+    },
+    {
+      "appid": 381210,
+      "contextid": "2",
+      "assetid": "3348972860985122372",
+      "classid": "2339867316",
+      "instanceid": "0",
+      "amount": "1"
+    },
+    {
+      "appid": 381210,
+      "contextid": "2",
+      "assetid": "3348972860985122373",
+      "classid": "2339867315",
+      "instanceid": "0",
+      "amount": "1"
+    },
+    {
+      "appid": 381210,
+      "contextid": "2",
+      "assetid": "3348972860985122376",
+      "classid": "2339867321",
+      "instanceid": "0",
+      "amount": "1"
+    },
+    {
+      "appid": 381210,
+      "contextid": "2",
+      "assetid": "3348972860985122377",
+      "classid": "2339867320",
+      "instanceid": "0",
+      "amount": "1"
+    },
+    {
+      "appid": 381210,
+      "contextid": "2",
+      "assetid": "3348972860985122380",
+      "classid": "2339867319",
+      "instanceid": "0",
+      "amount": "1"
+    },
+    {
+      "appid": 381210,
+      "contextid": "2",
+      "assetid": "3348972860985122381",
+      "classid": "2339867324",
+      "instanceid": "0",
+      "amount": "1"
+    },
+    {
+      "appid": 381210,
+      "contextid": "2",
+      "assetid": "3348972860985122382",
+      "classid": "2339867323",
+      "instanceid": "0",
+      "amount": "1"
+    }
+  ],
+  "descriptions": [
+    {
+      "appid": 381210,
+      "classid": "2165368697",
+      "instanceid": "0",
+      "currency": 0,
+      "background_color": "",
+      "icon_url": "70hL2L8i8T2NFs_wXTt0269q8WN-lB9mO2xF-pTCOadO6XGQirJFHK1523j8eF7ns7n1NjnVj3gOMRTfgpJceqkXBHHaSIyEbJv5SKpE4fFgfqddYxPZBt_h643KgXsVSslYJH8",
+      "icon_url_large": "70hL2L8i8T2NFs_wXTt0269q8WN-lB9mO2xF-pTCOadO6XGQirJFHK1523j8eF7ns7n1NjnVj3gOMRTfgpJceqkXBHHaSIyEbJv5SKpE4fFgfqddYxPZBt_h643KgXsVSslYJH8",
+      "tradable": 0,
+      "name": "Trapper CVGA 2016 Head",
+      "type": "",
+      "market_name": "Trapper CVGA 2016 Head",
+      "market_hash_name": "Trapper CVGA 2016 Head",
+      "commodity": 1,
+      "marketable": 0,
+      "sealed": 0
+    },
+    {
+      "appid": 381210,
+      "classid": "2339867322",
+      "instanceid": "0",
+      "currency": 0,
+      "background_color": "",
+      "icon_url": "70hL2L8i8T2NFs_wXTt0269q8WN-lB9mO2xF-pTCOadO6XGQirJFHK1523j8eF7ns7n1NjnVj3gOMRTfgpJceqkXBHHaSIyEbJv5SKpE4fFgfqddYxPZBN-SjOKUn3JkRzQI_Q",
+      "icon_url_large": "70hL2L8i8T2NFs_wXTt0269q8WN-lB9mO2xF-pTCOadO6XGQirJFHK1523j8eF7ns7n1NjnVj3gOMRTfgpJceqkXBHHaSIyEbJv5SKpE4fFgfqddYxPZBN-SjOKUn3JkRzQI_Q",
+      "tradable": 0,
+      "name": "Anniversary Trapper Mask 0301",
+      "type": "",
+      "market_name": "Anniversary Trapper Mask 0301",
+      "market_hash_name": "Anniversary Trapper Mask 0301",
+      "commodity": 1,
+      "marketable": 0,
+      "sealed": 0
+    },
+    {
+      "appid": 381210,
+      "classid": "2339867318",
+      "instanceid": "0",
+      "currency": 0,
+      "background_color": "",
+      "icon_url": "70hL2L8i8T2NFs_wXTt0269q8WN-lB9mO2xF-pTCOadO6XGQirJFHK1523j8eF7ns7n1NjnVj3gOMRTfgpJceqkXBHHaSIyEbJv5SKpE4fFgfrgIMFmZWefHGBdYKQ",
+      "icon_url_large": "70hL2L8i8T2NFs_wXTt0269q8WN-lB9mO2xF-pTCOadO6XGQirJFHK1523j8eF7ns7n1NjnVj3gOMRTfgpJceqkXBHHaSIyEbJv5SKpE4fFgfrgIMFmZWefHGBdYKQ",
+      "tradable": 0,
+      "name": "Anniversary Trapper W02",
+      "type": "",
+      "market_name": "Anniversary Trapper W02",
+      "market_hash_name": "Anniversary Trapper W02",
+      "commodity": 1,
+      "marketable": 0,
+      "sealed": 0
+    },
+    {
+      "appid": 381210,
+      "classid": "2339867317",
+      "instanceid": "0",
+      "currency": 0,
+      "background_color": "",
+      "icon_url": "70hL2L8i8T2NFs_wXTt0269q8WN-lB9mO2xF-pTCOadO6XGQirJFHK1523j8eF7ns7n1NjnVj3gOMRTfgpJceqkXBHHaSIyEbJv5SKpE4fFlfrgIMFmZWeeSMEcreQ",
+      "icon_url_large": "70hL2L8i8T2NFs_wXTt0269q8WN-lB9mO2xF-pTCOadO6XGQirJFHK1523j8eF7ns7n1NjnVj3gOMRTfgpJceqkXBHHaSIyEbJv5SKpE4fFlfrgIMFmZWeeSMEcreQ",
+      "tradable": 0,
+      "name": "Anniversary Wraith W02",
+      "type": "",
+      "market_name": "Anniversary Wraith W02",
+      "market_hash_name": "Anniversary Wraith W02",
+      "commodity": 1,
+      "marketable": 0,
+      "sealed": 0
+    },
+    {
+      "appid": 381210,
+      "classid": "2339867316",
+      "instanceid": "0",
+      "currency": 0,
+      "background_color": "",
+      "icon_url": "70hL2L8i8T2NFs_wXTt0269q8WN-lB9mO2xF-pTCOadO6XGQirJFHK1523j8eF7ns7n1NjnVj3gOMRTfgpJceqkXBHHaSIyEbJv5SKpE4fFxfrgIMFmZWecgKUx6jg",
+      "icon_url_large": "70hL2L8i8T2NFs_wXTt0269q8WN-lB9mO2xF-pTCOadO6XGQirJFHK1523j8eF7ns7n1NjnVj3gOMRTfgpJceqkXBHHaSIyEbJv5SKpE4fFxfrgIMFmZWecgKUx6jg",
+      "tradable": 0,
+      "name": "Anniversary Hillbilly W02",
+      "type": "",
+      "market_name": "Anniversary Hillbilly W02",
+      "market_hash_name": "Anniversary Hillbilly W02",
+      "commodity": 1,
+      "marketable": 0,
+      "sealed": 0
+    },
+    {
+      "appid": 381210,
+      "classid": "2339867315",
+      "instanceid": "0",
+      "currency": 0,
+      "background_color": "",
+      "icon_url": "70hL2L8i8T2NFs_wXTt0269q8WN-lB9mO2xF-pTCOadO6XGQirJFHK1523j8eF7ns7n1NjnVj3gOMRTfgpJceqkXBHHaSIyEbJv5SKpE4fF8frgIMVmZWedK7loGzQ",
+      "icon_url_large": "70hL2L8i8T2NFs_wXTt0269q8WN-lB9mO2xF-pTCOadO6XGQirJFHK1523j8eF7ns7n1NjnVj3gOMRTfgpJceqkXBHHaSIyEbJv5SKpE4fF8frgIMVmZWedK7loGzQ",
+      "tradable": 0,
+      "name": "Anniversary Nurse W03",
+      "type": "",
+      "market_name": "Anniversary Nurse W03",
+      "market_hash_name": "Anniversary Nurse W03",
+      "commodity": 1,
+      "marketable": 0,
+      "sealed": 0
+    },
+    {
+      "appid": 381210,
+      "classid": "2339867321",
+      "instanceid": "0",
+      "currency": 0,
+      "background_color": "",
+      "icon_url": "70hL2L8i8T2NFs_wXTt0269q8WN-lB9mO2xF-pTCOadO6XGQirJFHK1523j8eF7ns7n1NjnVj3gOMRTfgpJceqkXBHHaSIyEbJv5SKpE4et5frtXcASGB7H9jf_KgXsVh4hWXKc",
+      "icon_url_large": "70hL2L8i8T2NFs_wXTt0269q8WN-lB9mO2xF-pTCOadO6XGQirJFHK1523j8eF7ns7n1NjnVj3gOMRTfgpJceqkXBHHaSIyEbJv5SKpE4et5frtXcASGB7H9jf_KgXsVh4hWXKc",
+      "tradable": 0,
+      "name": "Anniversary Nea Torso 0103",
+      "type": "",
+      "market_name": "Anniversary Nea Torso 0103",
+      "market_hash_name": "Anniversary Nea Torso 0103",
+      "commodity": 1,
+      "marketable": 0,
+      "sealed": 0
+    },
+    {
+      "appid": 381210,
+      "classid": "2339867320",
+      "instanceid": "0",
+      "currency": 0,
+      "background_color": "",
+      "icon_url": "70hL2L8i8T2NFs_wXTt0269q8WN-lB9mO2xF-pTCOadO6XGQirJFHK1523j8eF7ns7n1NjnVj3gOMRTfgpJceqkXBHHaSIyEbJv5SKpE4eZ_frtXcASGB7L9_KKKmCVD3V57Jyf8SqWl",
+      "icon_url_large": "70hL2L8i8T2NFs_wXTt0269q8WN-lB9mO2xF-pTCOadO6XGQirJFHK1523j8eF7ns7n1NjnVj3gOMRTfgpJceqkXBHHaSIyEbJv5SKpE4eZ_frtXcASGB7L9_KKKmCVD3V57Jyf8SqWl",
+      "tradable": 0,
+      "name": "Anniversary Claudette Torso 0201",
+      "type": "",
+      "market_name": "Anniversary Claudette Torso 0201",
+      "market_hash_name": "Anniversary Claudette Torso 0201",
+      "commodity": 1,
+      "marketable": 0,
+      "sealed": 0
+    },
+    {
+      "appid": 381210,
+      "classid": "2339867319",
+      "instanceid": "0",
+      "currency": 0,
+      "background_color": "",
+      "icon_url": "70hL2L8i8T2NFs_wXTt0269q8WN-lB9mO2xF-pTCOadO6XGQirJFHK1523j8eF7ns7n1NjnVj3gOMRTfgpJceqkXBHHaSIyEbJv5SKpE4ehmfrtXcASGB7L9_KKKmCVD3V57J2Uvyhim",
+      "icon_url_large": "70hL2L8i8T2NFs_wXTt0269q8WN-lB9mO2xF-pTCOadO6XGQirJFHK1523j8eF7ns7n1NjnVj3gOMRTfgpJceqkXBHHaSIyEbJv5SKpE4ehmfrtXcASGB7L9_KKKmCVD3V57J2Uvyhim",
+      "tradable": 0,
+      "name": "Anniversary Meg Torso 0201",
+      "type": "",
+      "market_name": "Anniversary Meg Torso 0201",
+      "market_hash_name": "Anniversary Meg Torso 0201",
+      "commodity": 1,
+      "marketable": 0,
+      "sealed": 0
+    },
+    {
+      "appid": 381210,
+      "classid": "2339867324",
+      "instanceid": "0",
+      "currency": 0,
+      "background_color": "",
+      "icon_url": "70hL2L8i8T2NFs_wXTt0269q8WN-lB9mO2xF-pTCOadO6XGQirJFHK1523j8eF7ns7n1NjnVj3gOMRTfgpJceqkXBHHaSIyEbJv5SKpE4eF0fqddYxPZA9-SjOKUn3IpCV4iqw",
+      "icon_url_large": "70hL2L8i8T2NFs_wXTt0269q8WN-lB9mO2xF-pTCOadO6XGQirJFHK1523j8eF7ns7n1NjnVj3gOMRTfgpJceqkXBHHaSIyEbJv5SKpE4eF0fqddYxPZA9-SjOKUn3IpCV4iqw",
+      "tradable": 0,
+      "name": "Anniversary Head Dwight 0401",
+      "type": "",
+      "market_name": "Anniversary Head Dwight 0401",
+      "market_hash_name": "Anniversary Head Dwight 0401",
+      "commodity": 1,
+      "marketable": 0,
+      "sealed": 0
+    },
+    {
+      "appid": 381210,
+      "classid": "2339867323",
+      "instanceid": "0",
+      "currency": 0,
+      "background_color": "",
+      "icon_url": "70hL2L8i8T2NFs_wXTt0269q8WN-lB9mO2xF-pTCOadO6XGQirJFHK1523j8eF7ns7n1NjnVj3gOMRTfgpJceqkXBHHaSIyEbJv5SKpE4e9ifqddYxPZA9-SjOKUn3L1Hg9qDw",
+      "icon_url_large": "70hL2L8i8T2NFs_wXTt0269q8WN-lB9mO2xF-pTCOadO6XGQirJFHK1523j8eF7ns7n1NjnVj3gOMRTfgpJceqkXBHHaSIyEbJv5SKpE4e9ifqddYxPZA9-SjOKUn3L1Hg9qDw",
+      "tradable": 0,
+      "name": "Anniversary Head Jake 0401",
+      "type": "",
+      "market_name": "Anniversary Head Jake 0401",
+      "market_hash_name": "Anniversary Head Jake 0401",
+      "commodity": 1,
+      "marketable": 0,
+      "sealed": 0
+    }
+  ],
+  "total_inventory_count": 11,
+  "success": 1,
+  "rwgrsn": -2
+};
+
   const userStats = [
-    {label : "Items in Inventory", value: "4"},
+    {label : "Items in Inventory", value: apiReturns.total_inventory_count.toString()},
     { label: "Items On Sale", value: "4" },
     { label: "Followers", value: "1.2K" },
     { label: "Following", value: "456" },
   ];
 
-  const inventoryNFTs = [
-    {
-      appId: 5,
-      title: "Ancient Relic",
-      collection: "Lost Treasures",
-      image: "/placeholder.svg?height=300&width=300",
-      status: "inventory"
-    },
-    {
-      appId: 6,
-      title: "Cyber Punk",
-      collection: "Future Tech",
-      image: "/placeholder.svg?height=300&width=300",
-      status: "inventory"
-    },
-  ];
+
+  const inventoryItems = apiReturns.descriptions.map((asset) => ({
+    appId: asset.appid,
+    classId: asset.classid,
+    instanceId: asset.instanceid,
+    name: asset.name,
+    type: asset.type,
+    iconUrl: `https://steamcommunity-a.akamaihd.net/economy/image/${asset.icon_url_large}`,
+    smallIconUrl: asset.icon_url,
+    marketName: asset.market_name,
+    marketHashName: asset.market_hash_name,
+    tradable: asset.tradable,
+    marketable: asset.marketable,
+    commodity: asset.commodity,
+    sealed: asset.sealed,
+    price: "0.01 SUI", // Placeholder, replace with actual price logic
+    status: "inventory", // Placeholder, replace with actual status logic
+    description: "No description available",
+    currentBid: "", // Placeholder, replace with actual bid logic
+    endsIn: "", // Placeholder, replace with actual auction end time logic
+  }));
 
   const onSaleNFTs = [
     {
@@ -93,7 +385,7 @@ export default function ProfilePage() {
     },
   ];
 
-  const allNFTs = [...inventoryNFTs, ...onSaleNFTs, ...inAuctionNFTs];
+  const allNFTs = [...inventoryItems, ...onSaleNFTs, ...inAuctionNFTs];
 
   return (
     <div className="min-h-screen pt-8">
@@ -102,26 +394,26 @@ export default function ProfilePage() {
         <div className="mb-12">
           <div className="relative">
             <div className="h-48 md:h-64 bg-gradient-to-r from-purple-600/20 to-pink-600/20 rounded-xl overflow-hidden">
-              {isLoading && <Shimmer className="w-full h-full" />}
+              {isCoverLoading && <Shimmer className="w-full h-full" />}
               <img
                 src="/placeholder.svg?height=256&width=1024"
                 alt="Profile Cover"
                 className={cn(
                   "w-full h-full object-cover",
-                  isLoading ? "opacity-0" : "opacity-100"
+                  isCoverLoading ? "opacity-0" : "opacity-100"
                 )}
-                onLoad={handleImageLoad}
+                onLoad={handleCoverLoad}
               />
             </div>
 
             <div className="relative -mt-16 px-6">
               <div className="flex flex-col md:flex-row items-start md:items-end gap-6">
                 <Avatar className="w-32 h-32 border-4 border-white/20 bg-gradient-to-r from-purple-500 to-pink-500">
-                  {isLoading && <Shimmer className="w-full h-full rounded-full" />}
+                  {isAvatarLoading && <Shimmer className="w-full h-full rounded-full" />}
                   <AvatarImage 
                     src="/placeholder.svg?height=128&width=128" 
-                    className={cn(isLoading ? "opacity-0" : "opacity-100")}
-                    onLoad={handleImageLoad}
+                    className={cn(isAvatarLoading ? "opacity-0" : "opacity-100")}
+                    onLoad={handleAvatarLoad}
                   />
                 </Avatar>
 
@@ -187,8 +479,8 @@ export default function ProfilePage() {
           {/* All Items */}
           <TabsContent value="all">
             <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {allNFTs.map((item) => (
-                <NFTCard key={item.appId} item={item} isLoading={isLoading} handleImageLoad={handleImageLoad} />
+              {inventoryItems.map((item) => (
+                <NFTCard key={item.classId} item={item} isLoading={isLoading} handleImageLoad={handleImageLoad} />
               ))}
             </div>
           </TabsContent>
@@ -224,8 +516,8 @@ function NFTCard({ item, isLoading, handleImageLoad }: { item: any, isLoading: b
         <div className="relative overflow-hidden rounded-t-lg">
           {isLoading && <Shimmer className="absolute inset-0 w-full aspect-square" />}
           <img
-            src={item.image}
-            alt={item.title}
+            src={item.iconUrl}
+            alt={item.name}
             className={cn(
               "w-full aspect-square object-cover group-hover:scale-105 transition-transform duration-300",
               isLoading ? "opacity-0" : "opacity-100"
@@ -255,8 +547,8 @@ function NFTCard({ item, isLoading, handleImageLoad }: { item: any, isLoading: b
         <div className="p-4 flex flex-col" style={{ minHeight: '160px' }}>
           {/* Text Content */}
           <div className="flex-grow">
-            <h3 className="text-lg font-semibold text-white mb-1">{item.title}</h3>
-            <p className="text-sm text-gray-400 mb-2">{item.collection}</p>
+            <h3 className="text-lg font-semibold text-white mb-1">{item.name}</h3>
+            <p className="text-sm text-gray-400 mb-2">{item.type}</p>
 
             {/* Price/Bid Information */}
             <div className="mb-1">
