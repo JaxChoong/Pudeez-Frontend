@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@mysten/dapp-kit": "^0.14.21",
+    "@mysten/enoki": "^0.11.5",
     "@mysten/sui": "^1.0.0",
     "@radix-ui/react-avatar": "^1.0.4",
     "@radix-ui/react-separator": "^1.0.3",
