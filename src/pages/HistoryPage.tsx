@@ -14,7 +14,7 @@ export default function HistoryPage() {
     {
       id: 1,
       type: "purchase",
-      nft: {
+      item: {
         title: "Cosmic Dreams #1",
         image: "/placeholder.svg?height=80&width=80",
         collection: "Cosmic Collection",
@@ -30,7 +30,7 @@ export default function HistoryPage() {
     {
       id: 2,
       type: "sale",
-      nft: {
+      item: {
         title: "Digital Warrior",
         image: "/placeholder.svg?height=80&width=80",
         collection: "Battle Legends",
@@ -46,7 +46,7 @@ export default function HistoryPage() {
     {
       id: 3,
       type: "bid",
-      nft: {
+      item: {
         title: "Abstract Mind",
         image: "/placeholder.svg?height=80&width=80",
         collection: "Modern Art",
@@ -62,7 +62,7 @@ export default function HistoryPage() {
     {
       id: 4,
       type: "listing",
-      nft: {
+      item: {
         title: "Space Helmet",
         image: "/placeholder.svg?height=80&width=80",
         collection: "Sci-Fi Collection",
@@ -80,7 +80,7 @@ export default function HistoryPage() {
   const viewHistory = [
     {
       id: 1,
-      nft: {
+      item: {
         title: "Neon Cityscape",
         image: "/placeholder.svg?height=60&width=60",
         collection: "Urban Art",
@@ -90,7 +90,7 @@ export default function HistoryPage() {
     },
     {
       id: 2,
-      nft: {
+      item: {
         title: "Dragon Companion",
         image: "/placeholder.svg?height=60&width=60",
         collection: "Fantasy Realm",
@@ -100,7 +100,7 @@ export default function HistoryPage() {
     },
     {
       id: 3,
-      nft: {
+      item: {
         title: "Cyber Racer",
         image: "/placeholder.svg?height=60&width=60",
         collection: "Racing League",
@@ -113,7 +113,7 @@ export default function HistoryPage() {
   const favoriteHistory = [
     {
       id: 1,
-      nft: {
+      item: {
         title: "Mystic Portal",
         image: "/placeholder.svg?height=60&width=60",
         collection: "Magic Realm",
@@ -123,7 +123,7 @@ export default function HistoryPage() {
     },
     {
       id: 2,
-      nft: {
+      item: {
         title: "Golden Sword",
         image: "/placeholder.svg?height=60&width=60",
         collection: "Legendary Items",
@@ -220,8 +220,8 @@ export default function HistoryPage() {
 
                       {/* NFT Image */}
                       <img
-                        src={transaction.nft.image || "/placeholder.svg"}
-                        alt={transaction.nft.title}
+                        src={transaction.item.image || "/placeholder.svg"}
+                        alt={transaction.item.title}
                         className="w-16 h-16 object-cover rounded-lg flex-shrink-0"
                       />
 
@@ -229,8 +229,8 @@ export default function HistoryPage() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between mb-2">
                           <div>
-                            <h3 className="text-lg font-semibold text-white mb-1">{transaction.nft.title}</h3>
-                            <p className="text-sm text-gray-400">{transaction.nft.collection}</p>
+                            <h3 className="text-lg font-semibold text-white mb-1">{transaction.item.title}</h3>
+                            <p className="text-sm text-gray-400">{transaction.item.collection}</p>
                           </div>
                           <Badge className={`${getStatusColor(transaction.status)} text-white`}>
                             {transaction.status}
@@ -295,14 +295,14 @@ export default function HistoryPage() {
                       </div>
 
                       <img
-                        src={view.nft.image || "/placeholder.svg"}
-                        alt={view.nft.title}
+                        src={view.item.image || "/placeholder.svg"}
+                        alt={view.item.title}
                         className="w-16 h-16 object-cover rounded-lg flex-shrink-0"
                       />
 
                       <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-white mb-1">{view.nft.title}</h3>
-                        <p className="text-sm text-gray-400 mb-2">{view.nft.collection}</p>
+                        <h3 className="text-lg font-semibold text-white mb-1">{view.item.title}</h3>
+                        <p className="text-sm text-gray-400 mb-2">{view.item.collection}</p>
 
                         <div className="flex items-center gap-6 text-sm">
                           <div>
@@ -344,14 +344,14 @@ export default function HistoryPage() {
                       </div>
 
                       <img
-                        src={favorite.nft.image || "/placeholder.svg"}
-                        alt={favorite.nft.title}
+                        src={favorite.item.image || "/placeholder.svg"}
+                        alt={favorite.item.title}
                         className="w-16 h-16 object-cover rounded-lg flex-shrink-0"
                       />
 
                       <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-white mb-1">{favorite.nft.title}</h3>
-                        <p className="text-sm text-gray-400 mb-2">{favorite.nft.collection}</p>
+                        <h3 className="text-lg font-semibold text-white mb-1">{favorite.item.title}</h3>
+                        <p className="text-sm text-gray-400 mb-2">{favorite.item.collection}</p>
 
                         <div className="flex items-center gap-6 text-sm">
                           <div>

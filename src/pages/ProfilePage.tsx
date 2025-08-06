@@ -38,14 +38,14 @@ export default function ProfilePage() {
 
   const inventoryNFTs = [
     {
-      id: 5,
+      appId: 5,
       title: "Ancient Relic",
       collection: "Lost Treasures",
       image: "/placeholder.svg?height=300&width=300",
       status: "inventory"
     },
     {
-      id: 6,
+      appId: 6,
       title: "Cyber Punk",
       collection: "Future Tech",
       image: "/placeholder.svg?height=300&width=300",
@@ -55,7 +55,7 @@ export default function ProfilePage() {
 
   const onSaleNFTs = [
     {
-      id: 1,
+      appId: 1,
       title: "Mystic Fox",
       collection: "Urban Beasts",
       price: "3.1 ETH",
@@ -63,7 +63,7 @@ export default function ProfilePage() {
       status: "sale"
     },
     {
-      id: 2,
+      appId: 2,
       title: "Silent Peak",
       collection: "Nature Spirits",
       price: "1.7 ETH",
@@ -74,7 +74,7 @@ export default function ProfilePage() {
 
   const inAuctionNFTs = [
     {
-      id: 3,
+      appId: 3,
       title: "Neon Samurai",
       collection: "Cyber Legends",
       currentBid: "4.5 ETH",
@@ -83,7 +83,7 @@ export default function ProfilePage() {
       status: "auction"
     },
     {
-      id: 4,
+      appId: 4,
       title: "Dream Portal",
       collection: "Mystic Realms",
       currentBid: "2.2 ETH",
@@ -187,8 +187,8 @@ export default function ProfilePage() {
           {/* All Items */}
           <TabsContent value="all">
             <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {allNFTs.map((nft) => (
-                <NFTCard key={nft.id} nft={nft} isLoading={isLoading} handleImageLoad={handleImageLoad} />
+              {allNFTs.map((item) => (
+                <NFTCard key={item.appId} item={item} isLoading={isLoading} handleImageLoad={handleImageLoad} />
               ))}
             </div>
           </TabsContent>
@@ -196,8 +196,8 @@ export default function ProfilePage() {
           {/* On Sale Items */}
           <TabsContent value="on-sale">
             <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {onSaleNFTs.map((nft) => (
-                <NFTCard key={nft.id} nft={nft} isLoading={isLoading} handleImageLoad={handleImageLoad} />
+              {onSaleNFTs.map((item) => (
+                <NFTCard key={item.appId} item={item} isLoading={isLoading} handleImageLoad={handleImageLoad} />
               ))}
             </div>
           </TabsContent>
@@ -205,8 +205,8 @@ export default function ProfilePage() {
           {/* In Auction Items */}
           <TabsContent value="in-auction">
             <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {inAuctionNFTs.map((nft) => (
-                <NFTCard key={nft.id} nft={nft} isLoading={isLoading} handleImageLoad={handleImageLoad} />
+              {inAuctionNFTs.map((item) => (
+                <NFTCard key={item.appId} item={item} isLoading={isLoading} handleImageLoad={handleImageLoad} />
               ))}
             </div>
           </TabsContent>
@@ -216,7 +216,7 @@ export default function ProfilePage() {
   );
 }
 
-function NFTCard({ nft, isLoading, handleImageLoad }: { nft: any, isLoading: boolean, handleImageLoad: () => void }) {
+function NFTCard({ item, isLoading, handleImageLoad }: { item: any, isLoading: boolean, handleImageLoad: () => void }) {
   return (
     <Card className="bg-white/5 border-white/10 backdrop-blur-sm group hover:bg-white/10 transition-all duration-300 h-full flex flex-col">
       <CardContent className="p-0 flex flex-col h-full">
@@ -224,8 +224,8 @@ function NFTCard({ nft, isLoading, handleImageLoad }: { nft: any, isLoading: boo
         <div className="relative overflow-hidden rounded-t-lg">
           {isLoading && <Shimmer className="absolute inset-0 w-full aspect-square" />}
           <img
-            src={nft.image}
-            alt={nft.title}
+            src={item.image}
+            alt={item.title}
             className={cn(
               "w-full aspect-square object-cover group-hover:scale-105 transition-transform duration-300",
               isLoading ? "opacity-0" : "opacity-100"
@@ -234,17 +234,17 @@ function NFTCard({ nft, isLoading, handleImageLoad }: { nft: any, isLoading: boo
           />
           
           {/* Status Badge */}
-          {nft.status === "sale" && (
+          {item.status === "sale" && (
             <Badge className="absolute top-2 left-2 bg-green-500/80 hover:bg-green-500/90">
               <Tag className="w-3 h-3 mr-1" /> For Sale
             </Badge>
           )}
-          {nft.status === "auction" && (
+          {item.status === "auction" && (
             <Badge className="absolute top-2 left-2 bg-purple-500/80 hover:bg-purple-500/90">
               <Hammer className="w-3 h-3 mr-1" /> Auction
             </Badge>
           )}
-          {nft.status === "inventory" && (
+          {item.status === "inventory" && (
             <Badge className="absolute top-2 left-2 bg-blue-500/80 hover:bg-blue-500/90">
               <Box className="w-3 h-3 mr-1" /> Inventory
             </Badge>
@@ -255,23 +255,23 @@ function NFTCard({ nft, isLoading, handleImageLoad }: { nft: any, isLoading: boo
         <div className="p-4 flex flex-col" style={{ minHeight: '160px' }}>
           {/* Text Content */}
           <div className="flex-grow">
-            <h3 className="text-lg font-semibold text-white mb-1">{nft.title}</h3>
-            <p className="text-sm text-gray-400 mb-2">{nft.collection}</p>
+            <h3 className="text-lg font-semibold text-white mb-1">{item.title}</h3>
+            <p className="text-sm text-gray-400 mb-2">{item.collection}</p>
 
             {/* Price/Bid Information */}
             <div className="mb-1">
-              {nft.status === "sale" && (
-                <div className="text-lg font-bold text-white">{nft.price}</div>
+              {item.status === "sale" && (
+                <div className="text-lg font-bold text-white">{item.price}</div>
               )}
-              {nft.status === "auction" && (
+              {item.status === "auction" && (
                 <div>
                   <div className="flex items-center justify-between text-sm mb-0.5">
                     <span className="text-gray-300">Current Bid</span>
                     <span className="text-gray-300">Ends In</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-lg font-bold text-white">{nft.currentBid}</span>
-                    <span className="text-sm font-medium text-purple-300">{nft.endsIn}</span>
+                    <span className="text-lg font-bold text-white">{item.currentBid}</span>
+                    <span className="text-sm font-medium text-purple-300">{item.endsIn}</span>
                   </div>
                 </div>
               )}
@@ -281,8 +281,8 @@ function NFTCard({ nft, isLoading, handleImageLoad }: { nft: any, isLoading: boo
           {/* Buttons Container - Fixed at bottom */}
           <div className="flex justify-between gap-2 pt-2">
             <Link 
-              to={`/nft/${nft.id}`} 
-              className={nft.status === "inventory" ? "w-1/3" : "w-full"}
+              to={`/view/${item.appId}`} 
+              className={item.status === "inventory" ? "w-1/3" : "w-full"}
             >
               <Button 
                 variant="outline" 
@@ -294,8 +294,8 @@ function NFTCard({ nft, isLoading, handleImageLoad }: { nft: any, isLoading: boo
               </Button>
             </Link>
             
-            {nft.status === "inventory" && (
-              <Link to={`/sell/${nft.id}`} className="w-2/3">
+            {item.status === "inventory" && (
+              <Link to={`/sell/${item.appId}`} className="w-2/3">
                 <Button 
                   variant="outline" 
                   size="sm" 
