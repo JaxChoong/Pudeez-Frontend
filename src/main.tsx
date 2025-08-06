@@ -9,6 +9,7 @@ import { Theme } from "@radix-ui/themes"
 
 import App from "./App.tsx"
 import { networkConfig } from "./networkConfig.ts"
+import { RegisterEnokiWallets } from "./registerEnokiWallets.tsx"
 import "./index.css"
 
 const queryClient = new QueryClient()
@@ -18,6 +19,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     <Theme appearance="dark">
       <QueryClientProvider client={queryClient}>
         <SuiClientProvider networks={networkConfig} defaultNetwork="devnet">
+          <RegisterEnokiWallets />
           <WalletProvider>
             <App />
           </WalletProvider>
