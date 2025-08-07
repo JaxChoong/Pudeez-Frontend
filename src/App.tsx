@@ -3,6 +3,7 @@ import { ConnectButton, useCurrentAccount } from "@mysten/dapp-kit"
 import { Container, Flex, Heading } from "@radix-ui/themes"
 import { WalletStatus } from "./WalletStatus"
 import { OwnedObjects } from "./OwnedObjects"
+import { SteamAuthHandler } from "./SteamAuthHandler"
 import Navbar from "./components/Navbar"
 import LandingPage from "./pages/LandingPage"
 import MarketplacePage from "./pages/MarketplacePage"
@@ -11,13 +12,15 @@ import ChatPage from "./pages/ChatPage"
 import HistoryPage from "./pages/HistoryPage"
 import CartPage from "./pages/CartPage"
 import SellPage from "./pages/sell/[assetId]/page"
-import ItemDetailsPage from "./pages/view/[assetId]/page"
+import ItemDetailsPage from "./pages/view/[assetId]/page"import SignUpPage from "./pages/SignUpPage"
+
 function App() {
   const currentAccount = useCurrentAccount()
 
   return (
     <Router>
       <div className="min-h-screen bg-black">
+        <SteamAuthHandler />
         <Navbar />
         <Routes>
           {/* Main marketplace routes */}
@@ -30,6 +33,7 @@ function App() {
           <Route path="/sell/:assetId" element={<SellPage />} />
           <Route path="/view/:assetId" element={<ItemDetailsPage />} />
 
+          <Route path="/sign-up" element={<SignUpPage />} />
 
           {/* Original dApp wallet page */}
           <Route
