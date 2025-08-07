@@ -11,7 +11,7 @@ import Shimmer from "@/components/Shimmer";
 import { cn } from "@/lib/utils";
 
 export default function SellPage() {
-  const { appId } = useParams();
+  const { assetId } = useParams();
   const [listingType, setListingType] = useState<'sale' | 'auction'>('sale');
   const [price, setPrice] = useState('');
   const [minBid, setMinBid] = useState('');
@@ -54,7 +54,7 @@ export default function SellPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log({
-      nftId: appId,
+      nftId: assetId,
       listingType,
       price: listingType === 'sale' ? price : null,
       minBid: listingType === 'auction' ? minBid : null,
