@@ -4,6 +4,12 @@ import { useState, useEffect } from "react"
 import { Link, useLocation } from "react-router-dom"
 import { useCurrentAccount, ConnectButton } from "@mysten/dapp-kit"
 import { Button } from "./ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem
+} from "./ui/dropdown-menu"
 import { Input } from "./ui/input"
 import { Badge } from "./ui/badge"
 import {
@@ -58,12 +64,18 @@ function WalletConnectWrapper() {
   }
   if (savedAddress) {
     return (
-      <button
-        className="px-4 py-2 bg-cyan-600 text-white rounded font-mono text-xs hover:bg-cyan-700 transition"
-        onClick={handleDisconnect}
-      >
-        Disconnect ({formatAddress(savedAddress)})
-      </button>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button className="px-4 py-2 bg-cyan-600 text-white rounded font-mono text-xs hover:bg-cyan-700 transition">
+            {formatAddress(savedAddress)}
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem onClick={handleDisconnect} className="text-red-500 cursor-pointer">
+            Disconnect
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
     );
   }
   return <ConnectButton />;
