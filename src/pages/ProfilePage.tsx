@@ -24,10 +24,10 @@ import Shimmer from "@/components/Shimmer";
 import { useImageLoading } from "@/hooks/useImageLoading";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { getCookie } from "@/lib/utils";
 
 export default function ProfilePage() {
-  const steamProfileId = "76561198218003480";
-  
+  const walletAddress = getCookie("wallet_address");
   const [isFollowing, setIsFollowing] = useState(false);
   const { isLoading: isCoverLoading, handleImageLoad: handleCoverLoad } = useImageLoading();
   const { isLoading: isAvatarLoading, handleImageLoad: handleAvatarLoad } = useImageLoading();
@@ -41,17 +41,55 @@ export default function ProfilePage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchSteamProfileId = async () => {
       try {
-        setIsLoadingData(true);
-        const response = await fetch(`http://localhost:3111/api/steam/inventory/${steamProfileId}`);
+        const response = await fetch(`http://localhost:3111/api/user/get_steamid`,{
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ address: walletAddress })
+        });
         
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         
         const data = await response.json();
-        setApiReturns(data);
+        return data.steamID;
+      } catch (err) {
+        console.error('Error fetching Steam profile ID:', err);
+        setError(err instanceof Error ? err.message : String(err));
+        return null;
+      }
+    }
+
+    const fetchData = async (steamProfileId: string) => {
+      try {
+        setIsLoadingData(true);
+        
+        // Option 1: Use your backend as a proxy to Steam Web API
+        // Your backend should make the call to: 
+        // https://api.steampowered.com/IEconItems_730/GetPlayerItems/v0001/?key=YOUR_API_KEY&steamid=${steamProfileId}&format=json
+        const response = await fetch(`http://localhost:3111/api/steam/inventory/${steamProfileId}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        // Handle Steam Web API response structure
+        if (data.result && data.result.items) {
+          setApiReturns({ assets: data.result.items });
+        } else {
+          setApiReturns(data);
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : String(err));
         console.error('Error fetching Steam inventory:', err);
@@ -59,9 +97,18 @@ export default function ProfilePage() {
         setIsLoadingData(false);
       }
     };
-    
-    fetchData();
-  }, [steamProfileId]);
+
+    const initializeData = async () => {
+      const steamProfileId = await fetchSteamProfileId();
+      console.log("Steam Profile ID:", steamProfileId);
+      
+      if (steamProfileId) {
+        await fetchData(steamProfileId);
+      }
+    };
+
+    initializeData();
+  }, []);
 
   // Add loading and error states
   if (isLoadingData) {
