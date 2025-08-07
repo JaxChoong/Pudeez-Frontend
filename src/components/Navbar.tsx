@@ -95,12 +95,6 @@ export default function Navbar() {
 
             {/* Sui Wallet Connection */}
             <div className="flex items-center">
-              {currentAccount ? (
-                <div className="flex items-center space-x-2 neon-border-cyan bg-cyan-500/10 px-3 py-2">
-                  <div className="w-2 h-2 bg-cyan-400 animate-pulse"></div>
-                  <span className="neon-text-cyan text-sm font-mono">{formatAddress(currentAccount.address)}</span>
-                </div>
-              ) : null}
               <div className="ml-2">
                 <ConnectButton />
               </div>
