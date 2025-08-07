@@ -3,6 +3,7 @@ import { ConnectButton, useCurrentAccount } from "@mysten/dapp-kit"
 import { Container, Flex, Heading } from "@radix-ui/themes"
 import { WalletStatus } from "./WalletStatus"
 import { OwnedObjects } from "./OwnedObjects"
+import { SteamAuthHandler } from "./SteamAuthHandler"
 import Navbar from "./components/Navbar"
 import LandingPage from "./pages/LandingPage"
 import MarketplacePage from "./pages/MarketplacePage"
@@ -18,6 +19,7 @@ function App() {
   return (
     <Router>
       <div className="min-h-screen bg-black">
+        <SteamAuthHandler />
         <Navbar />
         <Routes>
           {/* Main marketplace routes */}
