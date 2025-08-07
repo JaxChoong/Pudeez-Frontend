@@ -12,7 +12,8 @@ import ChatPage from "./pages/ChatPage"
 import HistoryPage from "./pages/HistoryPage"
 import CartPage from "./pages/CartPage"
 import SellPage from "./pages/sell/[assetId]/page"
-import ItemDetailsPage from "./pages/view/[assetId]/page"import SignUpPage from "./pages/SignUpPage"
+import ItemDetailsPage from "./pages/view/[assetId]/page"
+import SignUpPage from "./pages/SignUpPage"
 
 function App() {
   const currentAccount = useCurrentAccount()
