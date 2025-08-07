@@ -6,6 +6,7 @@ import { Search, List, Grid3X3, Filter, Clock, Heart, TrendingUp, Zap, ShoppingC
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+import { Link } from "react-router-dom"
 import { Badge } from "@/components/ui/badge"
 import {
   DropdownMenu,
@@ -231,15 +232,20 @@ export default function MarketplacePage() {
 
                 <div className="grid grid-cols-[1fr_auto_auto] gap-2 mb-3">
                   {item.isAuction ? (
-                    <Button className="neon-button-pink font-mono uppercase text-xs h-10 px-4">
-                      <TrendingUp className="w-4 h-4 mr-2" />
-                      BID
-                    </Button>
+                        <Link to={`/bid/${item.id}`}>
+                          <span className="neon-button-pink font-mono uppercase text-xs h-10 px-4 flex items-center justify-center bg-white text-black rounded-md hover:bg-pink-50 transition-all duration-300">
+                            <TrendingUp className="w-4 h-4 mr-2" />
+                            BID
+                          </span>
+                        </Link>
                   ) : (
-                    <Button className="neon-button-cyan font-mono uppercase text-xs h-10 px-4">
-                      <Zap className="w-4 h-4 mr-2" />
-                      BUY
-                    </Button>
+                        <Link
+                          to={`/buy/${item.id}`}
+                          className="neon-button-cyan font-mono uppercase text-xs h-10 px-4 items-center justify-center flex bg-white text-black rounded-md hover:bg-cyan-100 transition-all duration-300"
+                        >
+                          <Zap className="w-4 h-4 mr-2" />
+                          BUY
+                        </Link>
                   )}
                   <Button
                     variant="outline"
