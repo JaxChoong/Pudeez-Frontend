@@ -11,6 +11,8 @@ import ProfilePage from "./pages/ProfilePage"
 import ChatPage from "./pages/ChatPage"
 import HistoryPage from "./pages/HistoryPage"
 import CartPage from "./pages/CartPage"
+import SellPage from "./pages/sell/[assetId]/page"
+import ItemDetailsPage from "./pages/view/[assetId]/page"
 import SignUpPage from "./pages/SignUpPage"
 
 function App() {
@@ -29,6 +31,9 @@ function App() {
           <Route path="/chat" element={<ChatPage />} />
           <Route path="/history" element={<HistoryPage />} />
           <Route path="/cart" element={<CartPage />} />
+          <Route path="/sell/:assetId" element={<SellPage />} />
+          <Route path="/view/:assetId" element={<ItemDetailsPage />} />
+
           <Route path="/sign-up" element={<SignUpPage />} />
 
           {/* Original dApp wallet page */}

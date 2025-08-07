@@ -67,7 +67,7 @@ export default function LandingPage() {
 
             {/* Hero Buttons */}
             <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-16">
-              <Link to="/games">
+              <Link to="/marketplace">
                 <Button
                   size="lg"
                   className="w-full sm:w-auto neon-button-cyan px-8 py-4 text-lg font-semibold rounded-none font-mono uppercase tracking-wider transform hover:scale-105"
