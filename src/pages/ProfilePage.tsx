@@ -143,8 +143,6 @@ export default function ProfilePage() {
     amount: asset.amount,
     contextId: asset.contextid,
     status: "inventory",
-    description: "none",
-    price: "0.01 ETH",
   })) || [];
 
   // console.log("User Assets:", userAssets);
@@ -305,7 +303,8 @@ function NFTCard({ item, isLoading, handleImageLoad }: { item: any, isLoading: b
           {/* Buttons Container - Fixed at bottom */}
           <div className="flex justify-between gap-2 pt-2">
             <Link 
-              to={`/view/${item.assetId}`} 
+              to={`/view/${item.assetId}`}
+              state={item}
               className={item.status === "inventory" ? "w-1/3" : "w-full"}
             >
               <Button 
