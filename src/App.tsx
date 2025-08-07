@@ -12,9 +12,57 @@ import ChatPage from "./pages/ChatPage"
 import HistoryPage from "./pages/HistoryPage"
 import CartPage from "./pages/CartPage"
 import SignUpPage from "./pages/SignUpPage"
+import { useEffect, useState } from "react"
+
+// Helper to get cookie value by name
+function getCookie(name: string) {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop()?.split(';').shift() || '';
+  return '';
+}
+
+// Helper to delete a cookie by name
+function deleteCookie(name: string) {
+  document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+}
 
 function App() {
-  const currentAccount = useCurrentAccount()
+  const currentAccount = useCurrentAccount();
+  const [savedAddress, setSavedAddress] = useState("");
+
+  useEffect(() => {
+    setSavedAddress(getCookie("wallet_address"));
+  }, []);
+
+  const formatAddress = (address: string) => {
+    return `${address.slice(0, 6)}...${address.slice(-4)}`;
+  };
+
+  // Custom ConnectButton with address display
+
+  function WalletConnectDisplay() {
+    // Handler for disconnect: clear cookie and reload
+    const handleDisconnect = () => {
+      deleteCookie("wallet_address");
+      window.location.reload();
+    };
+
+    if (currentAccount) {
+      return <ConnectButton />;
+    }
+    if (savedAddress) {
+      return (
+        <button
+          className="px-4 py-2 bg-cyan-600 text-white rounded font-mono text-xs hover:bg-cyan-700 transition"
+          onClick={handleDisconnect}
+        >
+          Disconnect ({formatAddress(savedAddress)})
+        </button>
+      );
+    }
+    return <ConnectButton />;
+  }
 
   return (
     <Router>
@@ -40,7 +88,7 @@ function App() {
                   <Flex direction="column" gap="2">
                     <Heading className="neon-text-cyan font-mono">NEURAL INTERFACE</Heading>
                     <div className="cyber-card p-6">
-                      <ConnectButton />
+                      <WalletConnectDisplay />
                       <WalletStatus />
                       {currentAccount && <OwnedObjects />}
                     </div>
@@ -52,7 +100,7 @@ function App() {
         </Routes>
       </div>
     </Router>
-  )
+  );
 }
 
 export default App

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Link, useLocation } from "react-router-dom"
 import { useCurrentAccount, ConnectButton } from "@mysten/dapp-kit"
 import { Button } from "./ui/button"
@@ -19,6 +19,55 @@ import {
   Wallet,
   Zap,
 } from "lucide-react"
+
+// Helper to get cookie value by name
+function getCookie(name: string): string {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) {
+    const cookiePart = parts.pop();
+    if (cookiePart) {
+      return cookiePart.split(';').shift() || '';
+    }
+  }
+  return '';
+}
+
+// Helper to delete a cookie by name
+function deleteCookie(name: string): void {
+  document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+}
+
+function WalletConnectWrapper() {
+  const account = useCurrentAccount();
+  const [savedAddress, setSavedAddress] = useState("");
+
+  useEffect(() => {
+    setSavedAddress(getCookie("wallet_address"));
+  }, []);
+
+  const formatAddress = (address: string) => `${address.slice(0, 6)}...${address.slice(-4)}`;
+
+  const handleDisconnect = () => {
+    deleteCookie("wallet_address");
+    window.location.reload();
+  };
+
+  if (account) {
+    return <ConnectButton />;
+  }
+  if (savedAddress) {
+    return (
+      <button
+        className="px-4 py-2 bg-cyan-600 text-white rounded font-mono text-xs hover:bg-cyan-700 transition"
+        onClick={handleDisconnect}
+      >
+        Disconnect ({formatAddress(savedAddress)})
+      </button>
+    );
+  }
+  return <ConnectButton />;
+}
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -102,7 +151,7 @@ export default function Navbar() {
                 </div>
               ) : null}
               <div className="ml-2">
-                <ConnectButton />
+                <WalletConnectWrapper />
               </div>
             </div>
           </div>
@@ -157,7 +206,7 @@ export default function Navbar() {
               </Link>
 
               <div className="pt-3">
-                <ConnectButton />
+                <WalletConnectWrapper />
               </div>
             </div>
           </div>
