@@ -15,7 +15,10 @@ export function RegisterEnokiWallets() {
 				// Provide the client IDs for each of the auth providers you want to use:
 				google: {
 					clientId: import.meta.env.VITE_GOOGLE_CLIENT_ID,
-				}
+				},
+                facebook: {
+                    clientId: import.meta.env.VITE_FACEBOOK_CLIENT_ID,
+                }
 			},
 			client,
 			network,
