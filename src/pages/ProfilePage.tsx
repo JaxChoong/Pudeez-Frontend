@@ -78,18 +78,19 @@ export default function ProfilePage() {
 
   // Safe access to assets with null check
   const userAssets = apiReturns?.assets?.map((asset: any) => ({
-    assetId: asset.assetId,
-    classId: asset.classId,
-    instanceId: asset.instanceId,
+    assetId: asset.assetid,
+    classId: asset.classid,
+    instanceId: asset.instanceid,
     iconUrl: `https://steamcommunity-a.akamaihd.net/economy/image/${asset.icon_url}`,
     name: asset.name,
     amount: asset.amount,
-    contextId: asset.contextId,
+    contextId: asset.contextid,
     status: "inventory",
     description: "none",
     price: "0.01 ETH",
   })) || [];
 
+  console.log("User Assets:", userAssets);
   const userStats = [
     {label : "Items in Inventory", value: userAssets.length.toString()},
     { label: "Items On Sale", value: "4" },
@@ -101,40 +102,40 @@ export default function ProfilePage() {
 
   const onSaleNFTs = [
     {
-      appId: 1,
-      title: "Mystic Fox",
+      assetId: 1,
+      name: "Mystic Fox",
       collection: "Urban Beasts",
       price: "3.1 ETH",
-      image: "/placeholder.svg?height=300&width=300",
+      iconUrl: "/placeholder.svg?height=300&width=300",
       status: "sale"
     },
     {
-      appId: 2,
-      title: "Silent Peak",
+      assetId: 2,
+      name: "Silent Peak",
       collection: "Nature Spirits",
       price: "1.7 ETH",
-      image: "/placeholder.svg?height=300&width=300",
+      iconUrl: "/placeholder.svg?height=300&width=300",
       status: "sale"
     },
   ];
 
   const inAuctionNFTs = [
     {
-      appId: 3,
-      title: "Neon Samurai",
+      assetId: 3,
+      name: "Neon Samurai",
       collection: "Cyber Legends",
       currentBid: "4.5 ETH",
       endsIn: "2h 30m",
-      image: "/placeholder.svg?height=300&width=300",
+      iconUrl: "/placeholder.svg?height=300&width=300",
       status: "auction"
     },
     {
-      appId: 4,
-      title: "Dream Portal",
+      assetId: 4,
+      name: "Dream Portal",
       collection: "Mystic Realms",
       currentBid: "2.2 ETH",
       endsIn: "5h 12m",
-      image: "/placeholder.svg?height=300&width=300",
+      iconUrl: "/placeholder.svg?height=300&width=300",
       status: "auction"
     },
   ];
@@ -220,7 +221,7 @@ export default function ProfilePage() {
         <Tabs defaultValue="all" className="mb-8">
           <TabsList className="bg-white/10 border-white/20 mb-8">
             <TabsTrigger value="all" className="data-[state=active]:bg-purple-600">
-              Inventory ({allNFTs.length})
+              Inventory ({userAssets.length})
             </TabsTrigger>
             <TabsTrigger value="on-sale" className="data-[state=active]:bg-purple-600">
               On Sale ({onSaleNFTs.length})
@@ -234,7 +235,7 @@ export default function ProfilePage() {
           <TabsContent value="all">
             <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {userAssets.map((item) => (
-                <NFTCard key={item.classId} item={item} isLoading={isLoading} handleImageLoad={handleImageLoad} />
+                <NFTCard key={item.assetId} item={item} isLoading={isLoading} handleImageLoad={handleImageLoad} />
               ))}
             </div>
           </TabsContent>
@@ -243,7 +244,7 @@ export default function ProfilePage() {
           <TabsContent value="on-sale">
             <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {onSaleNFTs.map((item) => (
-                <NFTCard key={item.appId} item={item} isLoading={isLoading} handleImageLoad={handleImageLoad} />
+                <NFTCard key={item.assetId} item={item} isLoading={isLoading} handleImageLoad={handleImageLoad} />
               ))}
             </div>
           </TabsContent>
@@ -252,7 +253,7 @@ export default function ProfilePage() {
           <TabsContent value="in-auction">
             <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {inAuctionNFTs.map((item) => (
-                <NFTCard key={item.appId} item={item} isLoading={isLoading} handleImageLoad={handleImageLoad} />
+                <NFTCard key={item.assetId} item={item} isLoading={isLoading} handleImageLoad={handleImageLoad} />
               ))}
             </div>
           </TabsContent>
@@ -327,7 +328,7 @@ function NFTCard({ item, isLoading, handleImageLoad }: { item: any, isLoading: b
           {/* Buttons Container - Fixed at bottom */}
           <div className="flex justify-between gap-2 pt-2">
             <Link 
-              to={`/view/${item.appId}`} 
+              to={`/view/${item.assetId}`} 
               className={item.status === "inventory" ? "w-1/3" : "w-full"}
             >
               <Button 
@@ -341,7 +342,7 @@ function NFTCard({ item, isLoading, handleImageLoad }: { item: any, isLoading: b
             </Link>
             
             {item.status === "inventory" && (
-              <Link to={`/sell/${item.appId}`} className="w-2/3">
+              <Link to={`/sell/${item.assetId}`} className="w-2/3">
                 <Button 
                   variant="outline" 
                   size="sm" 
