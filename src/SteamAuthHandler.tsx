@@ -17,26 +17,38 @@ export function SteamAuthHandler() {
 		}
 	}, [currentAccount]);
 
-	useEffect(() => {
-		if (walletAddress && !hasRedirected.current) {
-			hasRedirected.current = true;
-			const backendUrl = import.meta.env.VITE_BACKEND_URL;
-			if (!backendUrl) {
-				console.error("VITE_BACKEND_URL is not configured");
-				return;
-			}
-			window.location.href = `${backendUrl}/auth/steam/login?walletAddress=${encodeURIComponent(walletAddress)}`;
+useEffect(() => {
+	if (walletAddress && !hasRedirected.current) {
+		const backendUrl = import.meta.env.VITE_BACKEND_URL;
+		if (!backendUrl) {
+			console.error("VITE_BACKEND_URL is not configured");
+			return;
 		}
-		if (!walletAddress) {
-			hasRedirected.current = false;
-		}
-	}, [walletAddress]);
+		fetch(`${backendUrl}/api/user/get_steamid`, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ address: walletAddress }),
+		})
+			.then((res) => res.json())
+			.then((data) => {
+				if (!data.steamID) {
+					hasRedirected.current = true;
+					window.location.href = `${backendUrl}/auth/steam/login?walletAddress=${encodeURIComponent(walletAddress)}`;
+				}
+			})
+			.catch((err) => {
+				console.error("Failed to check SteamID:", err);
+			});
+	}
+	if (!walletAddress) {
+		hasRedirected.current = false;
+	}
+}, [walletAddress]);
 
 	// Handle redirect from Steam
 	useEffect(() => {
 		const params = new URLSearchParams(window.location.search);
 		const steamId = params.get("steamId");
-		console.log(walletAddress);
 		if (steamId && walletAddress) {
 			const backendUrl = import.meta.env.VITE_BACKEND_URL;
 			fetch(`${backendUrl}/api/user/add`, {
@@ -54,7 +66,7 @@ export function SteamAuthHandler() {
 					window.location.replace("/");
 				})
 				.catch(() => {
-					deleteCookie("wallet_address");
+					// deleteCookie("wallet_address");
 					window.history.replaceState({}, document.title, window.location.pathname);
 					window.location.replace("/");
 				});
