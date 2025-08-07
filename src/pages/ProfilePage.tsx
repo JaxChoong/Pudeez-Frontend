@@ -152,7 +152,7 @@ export default function ProfilePage() {
       assetId: 1,
       name: "Mystic Fox",
       collection: "Urban Beasts",
-      price: "3.1 ETH",
+  price: "3.1 Sui",
       iconUrl: "/placeholder.svg?height=300&width=300",
       status: "sale"
     },
@@ -160,7 +160,7 @@ export default function ProfilePage() {
       assetId: 2,
       name: "Silent Peak",
       collection: "Nature Spirits",
-      price: "1.7 ETH",
+  price: "1.7 Sui",
       iconUrl: "/placeholder.svg?height=300&width=300",
       status: "sale"
     },
@@ -171,7 +171,7 @@ export default function ProfilePage() {
       assetId: 3,
       name: "Neon Samurai",
       collection: "Cyber Legends",
-      currentBid: "4.5 ETH",
+  currentBid: "4.5 Sui",
       endsIn: "2h 30m",
       iconUrl: "/placeholder.svg?height=300&width=300",
       status: "auction"
@@ -180,7 +180,7 @@ export default function ProfilePage() {
       assetId: 4,
       name: "Dream Portal",
       collection: "Mystic Realms",
-      currentBid: "2.2 ETH",
+  currentBid: "2.2 Sui",
       endsIn: "5h 12m",
       iconUrl: "/placeholder.svg?height=300&width=300",
       status: "auction"

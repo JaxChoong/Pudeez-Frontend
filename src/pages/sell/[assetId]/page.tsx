@@ -111,7 +111,7 @@ export default function SellPage() {
                   <TabsContent value="sale">
                     <div className="space-y-4 mb-4">
                       <div>
-                        <p className="text-sm text-white mb-2">Price (ETH)</p>
+                        <p className="text-sm text-white mb-2">Price (Sui)</p>
                         <Input
                           type="number"
                           placeholder="0.00"
@@ -126,7 +126,7 @@ export default function SellPage() {
                   <TabsContent value="auction">
                     <div className="space-y-4 mb-4">
                       <div>
-                        <p className="text-sm text-white mb-2">Minimum Bid (ETH)</p>
+                        <p className="text-sm text-white mb-2">Minimum Bid (Sui)</p>
                         <Input
                           type="number"
                           placeholder="0.00"
