@@ -11,7 +11,7 @@ import { useState } from "react";
 
 export default function ItemDetailsPage() {
   const [isImageLoading, setIsImageLoading] = useState(true);
-  const { appId } = useParams();
+  const { assetId } = useParams();
 
   // Mock data - replace with actual data fetching
   const item = {
