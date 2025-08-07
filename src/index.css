@@ -345,4 +345,26 @@
       clip: rect(29px, 9999px, 91px, 0);
     }
   }
+
+  /* Custom styling for Sui dApp kit ConnectButton */
+  .wallet-connect-wrapper button {
+    padding: 0.5rem 1rem !important;
+    background-color: #0891b2 !important; /* bg-cyan-600 */
+    color: white !important;
+    border-radius: 0.25rem !important; /* rounded */
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace !important; /* font-mono */
+    font-size: 0.75rem !important; /* text-xs */
+    line-height: 1rem !important; /* text-xs */
+    transition: background-color 0.15s ease-in-out !important;
+    border: none !important;
+  }
+
+  .wallet-connect-wrapper button:hover {
+    background-color: #0e7490 !important; /* hover:bg-cyan-700 */
+  }
+
+  .wallet-connect-wrapper button:focus {
+    outline: 2px solid transparent !important;
+    outline-offset: 2px !important;
+  }
 }
