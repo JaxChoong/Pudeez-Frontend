@@ -20,7 +20,7 @@ export function RegisterEnokiWallets() {
                     clientId: import.meta.env.VITE_FACEBOOK_CLIENT_ID,
                 }
 			},
-			client,
+			client: client as any,
 			network,
 		});
  

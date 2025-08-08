@@ -16,9 +16,9 @@ import { AutocompleteSelect } from "@/components/ui/autocomplete-select";
 import SteamApps from "@/data/steam_apps.json";
 
 // List of supported Steam games with their app IDs, loaded from SteamApps.json
-const SUPPORTED_GAMES = (SteamApps as Array<{ name: string; appId: number; contextId?: number }>).map(app => ({
+const SUPPORTED_GAMES = (SteamApps as Array<{ name: string; appid: number; contextId?: number }>).map(app => ({
   name: app.name,
-  appId: app.appId,
+  appId: app.appid,
   contextId: app.contextId ?? 2, // default to 2 if not provided
 }));
 
