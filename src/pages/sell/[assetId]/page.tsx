@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tag, Hammer, Clock } from "lucide-react";
 import Shimmer from "@/components/Shimmer";
 import { cn } from "@/lib/utils";
+import { getCookie } from "@/lib/utils";
 import steamAppsData from "@/data/steam_apps.json";
 
 interface SteamGame {
@@ -45,11 +46,18 @@ export default function SellPage() {
   const currentAccount = useCurrentAccount();
   const { mutate: signTransaction } = useSignTransaction();
   
+  // Get wallet address from both current account and cookies (fallback)
+  const walletAddress = currentAccount?.address || getCookie("wallet_address");
+  
   // Debug logging
   useEffect(() => {
     console.log('SellPage - currentAccount:', currentAccount);
     console.log('SellPage - currentAccount address:', currentAccount?.address);
-  }, [currentAccount]);
+    console.log('SellPage - currentAccount exists:', !!currentAccount);
+    console.log('SellPage - currentAccount type:', typeof currentAccount);
+    console.log('SellPage - walletAddress from cookie:', getCookie("wallet_address"));
+    console.log('SellPage - final walletAddress:', walletAddress);
+  }, [currentAccount, walletAddress]);
   
   const [listingType, setListingType] = useState<'sale' | 'auction'>('sale');
   const [price, setPrice] = useState('');
@@ -109,7 +117,7 @@ export default function SellPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!currentAccount) {
+    if (!walletAddress) {
       setError("Please connect your wallet to list items");
       return;
     }
@@ -145,7 +153,7 @@ export default function SellPage() {
         classid: item.classId,
         instanceid: item.instanceId,
         amount: item.amount || "1",
-        walletAddress: currentAccount.address,
+        walletAddress: walletAddress,
         icon_url: item.iconUrl ? item.iconUrl.replace('https://steamcommunity-a.akamaihd.net/economy/image/', '') : '',
         name: item.name || 'Unknown Item',
         price: listingType === 'sale' ? price : minBid,
@@ -233,11 +241,16 @@ export default function SellPage() {
       
       // Create a simple transaction to verify wallet ownership
       // In production with sufficient WAL tokens, this would purchase storage resource
-      tx.transferObjects([tx.gas], currentAccount.address);
+      tx.transferObjects([tx.gas], walletAddress);
       
       console.log('Signing transaction for wallet verification...');
       
-      // Step 3: Sign the transaction
+      // Step 3: Sign the transaction (this requires currentAccount object)
+      if (!currentAccount) {
+        setError("Please connect your wallet properly to sign transactions");
+        return;
+      }
+      
       signTransaction(
         {
           transaction: tx as any,
@@ -486,7 +499,8 @@ export default function SellPage() {
                   </div>
                 )}
 
-                {!currentAccount && (
+
+                {!walletAddress && (
                   <div className="p-3 bg-yellow-500/20 border border-yellow-500/30 rounded-md mb-4">
                     <p className="text-yellow-400 text-sm">Please connect your wallet to list items</p>
                   </div>
@@ -503,7 +517,7 @@ export default function SellPage() {
                   </Button>
                   <Button 
                     type="submit" 
-                    disabled={isSubmitting || !currentAccount || !steamId}
+                    disabled={isSubmitting || !walletAddress || !steamId}
                     className="bg-purple-600 hover:bg-purple-700"
                   >
                     {isSubmitting ? 'Listing...' : (listingType === 'sale' ? 'Pudeez for Sale' : 'Start Auction')}
