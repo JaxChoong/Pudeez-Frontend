@@ -100,27 +100,10 @@ export default function MarketplacePage() {
     const matchesSearch =
       item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.game.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesGenre = selectedGenre === "all" || item.genre === selectedGenre
+    const matchesGenre = selectedGenre === "all" // Remove genre filtering since genre field no longer exists
     const matchesGame = selectedGame === "all" || item.gameId === selectedGame
     return matchesSearch && matchesGenre && matchesGame
   })
-
-  const getRarityColor = (rarity: string) => {
-    switch (rarity) {
-      case "Arcana":
-      case "Unusual":
-        return "neon-border-purple bg-purple-500/20 text-purple-400"
-      case "Covert":
-      case "Limited":
-        return "neon-border-pink bg-pink-500/20 text-pink-400"
-      case "Classified":
-        return "neon-border bg-red-500/20 text-red-400"
-      case "Rare":
-        return "neon-border-cyan bg-cyan-500/20 text-cyan-400"
-      default:
-        return "neon-border bg-gray-500/20 text-gray-400"
-    }
-  }
 
   const renderGameItemCard = (item: any, isGridView = true) => {
     return (
@@ -144,7 +127,7 @@ export default function MarketplacePage() {
                   key={item.image || "/placeholder.svg"}
                 />
                 <div className="absolute top-3 left-3">
-                  <Badge className={getRarityColor(item.rarity)}>{item.rarity.toUpperCase()}</Badge>
+                  <Badge className="neon-border bg-blue-500/20 text-blue-400">STEAM</Badge>
                 </div>
                 <div className="absolute top-3 right-3 flex gap-2">
                   {item.isAuction && (
@@ -166,7 +149,7 @@ export default function MarketplacePage() {
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center text-gray-400 text-sm font-mono">
                     <Heart className="w-4 h-4 mr-1" />
-                    {item.likes}
+                    {item.steamName || 'Unknown User'}
                   </div>
                   <div className="text-right">
                     <div className="text-lg font-bold neon-text-pink font-mono">{item.price}</div>
@@ -223,10 +206,10 @@ export default function MarketplacePage() {
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
                   <h3 className="text-lg font-semibold neon-text-cyan font-mono">{item.title}</h3>
-                  <Badge className={getRarityColor(item.rarity)}>{item.rarity.toUpperCase()}</Badge>
+                  <Badge className="neon-border bg-blue-500/20 text-blue-400">STEAM</Badge>
                 </div>
                 <p className="text-sm text-gray-400 font-mono">{item.game}</p>
-                <p className="text-xs text-gray-500 font-mono">{item.condition}</p>
+                <p className="text-xs text-gray-500 font-mono">Owner: {item.steamName || 'Unknown User'}</p>
               </div>
               <div className="text-right">
                 <div className="text-xl font-bold neon-text-pink font-mono mb-1">{item.price}</div>

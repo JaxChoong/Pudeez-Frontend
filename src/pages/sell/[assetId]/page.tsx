@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { useCurrentAccount, useSignTransaction } from '@mysten/dapp-kit';
 import { Transaction } from '@mysten/sui/transactions';
+import { useSteam } from "@/contexts/SteamContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -44,12 +45,14 @@ export default function SellPage() {
   const navigate = useNavigate();
   const currentAccount = useCurrentAccount();
   const { mutate: signTransaction } = useSignTransaction();
+  const { steamUser } = useSteam();
   
   // Debug logging
   useEffect(() => {
     console.log('SellPage - currentAccount:', currentAccount);
     console.log('SellPage - currentAccount address:', currentAccount?.address);
-  }, [currentAccount]);
+    console.log('SellPage - steamUser:', steamUser);
+  }, [currentAccount, steamUser]);
   
   const [listingType, setListingType] = useState<'sale' | 'auction'>('sale');
   const [price, setPrice] = useState('');
@@ -62,16 +65,12 @@ export default function SellPage() {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // Game selection dropdown state
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedGame, setSelectedGame] = useState<{appid: string, name: string} | null>(null);
-  const [showDropdown, setShowDropdown] = useState(false);
   const [steamId, setSteamId] = useState(item?.appid || '');
 
   // Filter games based on search term
-  const filteredGames = steamApps
-    .filter(game => game.name.toLowerCase().includes(searchTerm.toLowerCase()))
-    .slice(0, 10);
+  // const filteredGames = steamApps
+  //   .filter(game => game.name.toLowerCase().includes(searchTerm.toLowerCase()))
+  //   .slice(0, 10);
 
   useEffect(() => {
     if (!item && !loading) {
@@ -84,7 +83,7 @@ export default function SellPage() {
     if (item?.appid) {
       const game = steamApps.find(g => g.appid.toString() === item.appid);
       if (game) {
-        setSelectedGame({ appid: game.appid.toString(), name: game.name });
+        // setSelectedGame({ appid: game.appid.toString(), name: game.name });
         setSteamId(game.appid.toString());
       }
     }
@@ -147,7 +146,9 @@ export default function SellPage() {
         price: listingType === 'sale' ? price : minBid,
         listingType,
         description,
-        auctionDuration: listingType === 'auction' ? auctionDuration : null
+        auctionDuration: listingType === 'auction' ? auctionDuration : null,
+        steamID: steamUser?.steamID || '',
+        steamName: steamUser?.steamName || ''
       };
 
       // Debug: Log the item object to see its structure
@@ -265,6 +266,8 @@ export default function SellPage() {
                 auctionDuration: assetData.auctionDuration,
                 blobId,
                 signature: result.signature,
+                steamID: assetData.steamID,
+                steamName: assetData.steamName,
               };
               
               console.log('Request data being sent:', requestData);

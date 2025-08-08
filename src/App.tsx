@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
 import { useCurrentAccount } from "@mysten/dapp-kit"
 import { SteamAuthHandler } from "./SteamAuthHandler"
+import { SteamProvider } from "./contexts/SteamContext"
 import Navbar from "./components/Navbar"
 import LandingPage from "./pages/LandingPage"
 import MarketplacePage from "./pages/MarketplacePage"
@@ -27,22 +28,24 @@ function App() {
 
   return (
     <div className="min-h-screen bg-black">
-      <SteamAuthHandler />
-      <Navbar />
-      <Routes>
-        {/* Main marketplace routes */}
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/marketplace" element={<MarketplacePage />} />
-        <Route path="/profile" element={<ProfilePage />} />
-        <Route path="/cart" element={<CartPage />} />
-        <Route path="/sell/:assetId" element={<SellPage />} />
-        <Route path="/view/:assetId" element={<ItemDetailsPage />} />
-        <Route path="/buy/:assetId" element={<BuyPage />} />
-        <Route path="/bid/:assetId" element={<BidPage />} />
-        <Route path="/sign-up" element={<SignUpPage />} />
-        <Route path="/inventory" element={<InventoryPage />} />
-        
-      </Routes>
+      <SteamProvider>
+        <SteamAuthHandler />
+        <Navbar />
+        <Routes>
+          {/* Main marketplace routes */}
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/marketplace" element={<MarketplacePage />} />
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/cart" element={<CartPage />} />
+          <Route path="/sell/:assetId" element={<SellPage />} />
+          <Route path="/view/:assetId" element={<ItemDetailsPage />} />
+          <Route path="/buy/:assetId" element={<BuyPage />} />
+          <Route path="/bid/:assetId" element={<BidPage />} />
+          <Route path="/sign-up" element={<SignUpPage />} />
+          <Route path="/inventory" element={<InventoryPage />} />
+          
+        </Routes>
+      </SteamProvider>
     </div>
   );
 }
