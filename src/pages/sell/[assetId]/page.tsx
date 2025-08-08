@@ -45,7 +45,7 @@ export default function SellPage() {
   const navigate = useNavigate();
   const currentAccount = useCurrentAccount();
   const { mutate: signTransaction } = useSignTransaction();
-  const { steamUser } = useSteam();
+  const { steamUser, selectedGame, setSelectedGame, isLoading: steamLoading } = useSteam();
   
   // Debug logging
   useEffect(() => {
@@ -84,10 +84,11 @@ export default function SellPage() {
       const game = steamApps.find(g => g.appid.toString() === item.appid);
       if (game) {
         // setSelectedGame({ appid: game.appid.toString(), name: game.name });
+        setSelectedGame({ appid: game.appid, name: game.name });
         setSteamId(game.appid.toString());
       }
     }
-  }, [item]);
+  }, [item, setSelectedGame]);
 
   const handleImageLoad = () => {
     setIsImageLoading(false);
@@ -134,7 +135,7 @@ export default function SellPage() {
 
     try {
       const assetData = {
-        appid: steamId, // Use the selected game's appid
+        appid: selectedGame?.appid || steamId, // Use selected game's appid or fallback to steamId
         contextid: item.contextId,
         assetid: item.assetId,
         classid: item.classId,
@@ -148,11 +149,20 @@ export default function SellPage() {
         description,
         auctionDuration: listingType === 'auction' ? auctionDuration : null,
         steamID: steamUser?.steamID || '',
-        steamName: steamUser?.steamName || ''
+        steamName: steamUser?.steamName || '',
+        steamAvatar: steamUser?.avatar || ''
       };
 
-      // Debug: Log the item object to see its structure
+      // Debug: Log the complete asset data being sent
+      console.log('Complete assetData being sent:', assetData);
       console.log('Item object received:', item);
+      console.log('Steam user data:', steamUser);
+      console.log('Current account:', currentAccount?.address);
+      
+      // Check if Steam data is available
+      if (!steamUser?.steamID) {
+        console.warn('Warning: Steam user data not available. Steam ID, name, and avatar will be empty.');
+      }
 
       // Step 1: Try to upload asset data to Walrus, with fallback
       //
@@ -268,6 +278,7 @@ export default function SellPage() {
                 signature: result.signature,
                 steamID: assetData.steamID,
                 steamName: assetData.steamName,
+                steamAvatar: assetData.steamAvatar,
               };
               
               console.log('Request data being sent:', requestData);

@@ -36,15 +36,21 @@ export default function MarketplacePage() {
   useEffect(() => {
     const fetchMarketplaceAssets = async () => {
       try {
+        console.log('[MarketplacePage] Starting to fetch marketplace assets...')
         setIsLoadingAssets(true)
         setError(null)
         const response = await marketplaceService.getMarketplaceAssets(100, 0)
+        console.log('[MarketplacePage] Raw response from marketplaceService:', response)
+        console.log('[MarketplacePage] Assets array:', response.assets)
+        console.log('[MarketplacePage] Assets count:', response.assets?.length || 0)
         setMarketplaceAssets(response.assets)
+        console.log('[MarketplacePage] Set marketplace assets, state should update')
       } catch (err) {
-        console.error('Error fetching marketplace assets:', err)
+        console.error('[MarketplacePage] Error fetching marketplace assets:', err)
         setError('Failed to load marketplace assets. Please try again later.')
       } finally {
         setIsLoadingAssets(false)
+        console.log('[MarketplacePage] Finished loading assets')
       }
     }
 
@@ -91,15 +97,42 @@ export default function MarketplacePage() {
     },
   ]
 
-  const filteredItems = gameItems.filter((item) => {
+  console.log('[MarketplacePage] Current marketplaceAssets.length:', marketplaceAssets.length)
+  console.log('[MarketplacePage] Using gameItems:', gameItems.length > 0 ? `${gameItems.length} items` : 'no items')
+  console.log('[MarketplacePage] First few gameItems:', gameItems.slice(0, 3))
+
+  const filteredItems = gameItems.filter((item, index) => {
     const matchesSearch =
       item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.game.toLowerCase().includes(searchTerm.toLowerCase())
 
     const matchesGenre = selectedGenre === "all" 
-    const matchesGame = selectedGame === "all" || item.gameId === selectedGame
-    return matchesSearch && matchesGenre && matchesGame
+    const matchesGame = selectedGame === "all" || selectedGame === null || item.gameId === selectedGame
+    
+    const passes = matchesSearch && matchesGenre && matchesGame
+    
+    // Debug log for first item
+    if (index === 0) {
+      console.log('[MarketplacePage] First item filter debug:', {
+        item: item.title,
+        matchesSearch,
+        matchesGenre, 
+        matchesGame,
+        passes,
+        searchTerm,
+        selectedGenre,
+        selectedGame,
+        itemGameId: item.gameId
+      })
+    }
+    
+    return passes
   })
+
+  console.log('[MarketplacePage] Filter criteria:', { searchTerm, selectedGenre, selectedGame })
+  console.log('[MarketplacePage] Total gameItems before filtering:', gameItems.length)
+  console.log('[MarketplacePage] Filtered items count:', filteredItems.length)
+  console.log('[MarketplacePage] Filtered items:', filteredItems.slice(0, 3))
 
   const renderGameItemCard = (item: any, isGridView = true) => {
     return (

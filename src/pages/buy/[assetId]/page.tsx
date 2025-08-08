@@ -109,8 +109,8 @@ export default function BuyPage() {
   if (error || !item) return <div className="text-center text-red-400 py-10">{error || "Asset not found"}</div>;
 
   const owner = {
-    name: item?.ownerName || "Unknown User",
-    avatar: item?.ownerAvatar || "https://via.placeholder.com/80",
+    name: item?.steamID || item?.ownerName || "Unknown User",
+    avatar: item?.steamAvatar || item?.ownerAvatar || "https://via.placeholder.com/80",
   };
 
   return (
@@ -169,9 +169,6 @@ export default function BuyPage() {
                 { label: "Asset ID", value: item.assetid },
                 { label: "Blob ID", value: item.blobId },
                 { label: "App ID", value: item.appid },
-                { label: "Steam ID", value: item.steamID },
-                { label: "Steam Name", value: item.steamName },
-                { label: "Wallet Address", value: item.walletAddress },
                 {
                   label: "Uploaded At",
                   value: item.uploadedAt

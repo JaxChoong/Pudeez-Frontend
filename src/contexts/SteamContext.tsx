@@ -4,11 +4,19 @@ import { useCurrentAccount } from '@mysten/dapp-kit';
 interface SteamUser {
   steamID: string;
   steamName: string;
+  avatar?: string;
+}
+
+interface SelectedGame {
+  appid: number;
+  name: string;
 }
 
 interface SteamContextType {
   steamUser: SteamUser | null;
   setSteamUser: (user: SteamUser | null) => void;
+  selectedGame: SelectedGame | null;
+  setSelectedGame: (game: SelectedGame | null) => void;
   isLoading: boolean;
   fetchSteamUser: () => Promise<void>;
 }
@@ -29,6 +37,7 @@ interface SteamProviderProps {
 
 export function SteamProvider({ children }: SteamProviderProps) {
   const [steamUser, setSteamUser] = useState<SteamUser | null>(null);
+  const [selectedGame, setSelectedGame] = useState<SelectedGame | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const currentAccount = useCurrentAccount();
 
@@ -61,7 +70,8 @@ export function SteamProvider({ children }: SteamProviderProps) {
             const profileData = await profileResponse.json();
             setSteamUser({
               steamID: data.steamID,
-              steamName: profileData.personaName || 'Unknown User'
+              steamName: profileData.personaName || 'Unknown User',
+              avatar: profileData.avatar || profileData.avatarMedium || profileData.avatarFull
             });
           } else {
             setSteamUser({
@@ -103,7 +113,7 @@ export function SteamProvider({ children }: SteamProviderProps) {
   }, [currentAccount?.address]);
 
   return (
-    <SteamContext.Provider value={{ steamUser, setSteamUser, isLoading, fetchSteamUser }}>
+    <SteamContext.Provider value={{ steamUser, setSteamUser, selectedGame, setSelectedGame, isLoading, fetchSteamUser }}>
       {children}
     </SteamContext.Provider>
   );

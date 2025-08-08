@@ -42,8 +42,14 @@ class MarketplaceService {
 
   async getMarketplaceAssets(limit: number = 50, offset: number = 0): Promise<MarketplaceResponse> {
     try {
+      console.log('[MarketplaceService] Fetching assets with params:', { limit, offset })
+      console.log('[MarketplaceService] Base URL:', this.baseUrl)
+      
+      const url = `${this.baseUrl}/api/marketplace/assets?limit=${limit}&offset=${offset}`
+      console.log('[MarketplaceService] Full URL:', url)
+      
       const response = await fetch(
-        `${this.baseUrl}/api/marketplace/assets?limit=${limit}&offset=${offset}`,
+        url,
         {
           method: 'GET',
           headers: {
@@ -52,14 +58,21 @@ class MarketplaceService {
         }
       );
 
+      console.log('[MarketplaceService] Response status:', response.status)
+      console.log('[MarketplaceService] Response ok:', response.ok)
+
       if (!response.ok) {
+        console.error('[MarketplaceService] Response not ok, status:', response.status, response.statusText)
         throw new Error(`Failed to fetch marketplace assets: ${response.statusText}`);
       }
 
       const data = await response.json();
+      console.log('[MarketplaceService] Response data:', data)
+      console.log('[MarketplaceService] Assets array:', data.assets)
+      console.log('[MarketplaceService] Assets count from response:', data.count)
       return data;
     } catch (error) {
-      console.error('Error fetching marketplace assets:', error);
+      console.error('[MarketplaceService] Error fetching marketplace assets:', error);
       throw error;
     }
   }
