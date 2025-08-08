@@ -16,14 +16,14 @@ import { getCookie } from "@/lib/utils";
 import { AutocompleteSelect } from "@/components/ui/autocomplete-select";
 import SteamApps from "@/data/steam_apps.json";
 
-// List of supported Steam games with their app IDs
-const SUPPORTED_GAMES = [
-  { name: "Counter-Strike 2", appId: 730, contextId: 2 },
-  { name: "Dota 2", appId: 570, contextId: 2 },
-  { name: "Team Fortress 2", appId: 440, contextId: 2 },
-  { name: "Rust", appId: 252490, contextId: 2 },
-  { name: "PUBG: BATTLEGROUNDS", appId: 578080, contextId: 2 },
-];
+// List of supported Steam games with their app IDs, loaded from SteamApps.json
+const SUPPORTED_GAMES = (SteamApps as Array<{ name: string; appId: number; contextId?: number }>).map(app => ({
+  name: app.name,
+  appId: app.appid,
+  contextId: app.contextId ?? 2, // default to 2 if not provided
+}));
+
+console.log("Supported Games:", SUPPORTED_GAMES);
 
 export default function ProfilePage() {
   // State declarations
