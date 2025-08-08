@@ -13,6 +13,17 @@ import { useImageLoading } from "@/hooks/useImageLoading";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { getCookie } from "@/lib/utils";
+import { AutocompleteSelect } from "@/components/ui/autocomplete-select";
+import SteamApps from "@/data/steam_apps.json";
+
+// List of supported Steam games with their app IDs
+const SUPPORTED_GAMES = [
+  { name: "Counter-Strike 2", appId: 730, contextId: 2 },
+  { name: "Dota 2", appId: 570, contextId: 2 },
+  { name: "Team Fortress 2", appId: 440, contextId: 2 },
+  { name: "Rust", appId: 252490, contextId: 2 },
+  { name: "PUBG: BATTLEGROUNDS", appId: 578080, contextId: 2 },
+];
 
 export default function ProfilePage() {
   // State declarations
@@ -20,28 +31,25 @@ export default function ProfilePage() {
   const { isLoading: isAvatarLoading, handleImageLoad: handleAvatarLoad } = useImageLoading();
   const { isLoading, handleImageLoad } = useImageLoading();
   const [isFollowing, setIsFollowing] = useState(false);
+  const [selectedGame, setSelectedGame] = useState<string>("");
+  const [steamProfileId, setSteamProfileId] = useState<string | null>(null);
+  
   interface ApiReturns {
     assets?: Array<any>;
   }
   const [apiReturns, setApiReturns] = useState<ApiReturns | null>(null);
-  const [isLoadingData, setIsLoadingData] = useState(true);
+  const [isLoadingData, setIsLoadingData] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [listedAssets, setListedAssets] = useState<Array<any>>([]);
   const [isLoadingListedAssets, setIsLoadingListedAssets] = useState(false);
   const hasFetched = useRef(false);
   
   useEffect(() => {
-    // Prevent duplicate calls
-    if (hasFetched.current) {
-      console.log('ProfilePage - Already fetched, skipping');
-      return;
-    }
+    if (hasFetched.current) return;
 
     const addr = getCookie("wallet_address");
     
-    // More robust validation
     if (!addr || addr === 'null' || addr === 'undefined' || addr.trim() === '') {
-      console.log('ProfilePage - No valid wallet address found');
       setError("No wallet address found. Please connect your wallet.");
       setIsLoadingData(false);
       return;
@@ -49,11 +57,9 @@ export default function ProfilePage() {
 
     hasFetched.current = true;
     const walletAddress = addr.trim();
-    console.log('ProfilePage - Using wallet address:', walletAddress);
 
     const fetchSteamProfileId = async () => {
       try {
-        console.log('Sending request to get Steam ID with wallet address:', walletAddress);
         const response = await fetch(`http://localhost:3111/api/user/get_steamid`,{
             method: 'POST',
             headers: {
@@ -67,65 +73,25 @@ export default function ProfilePage() {
         }
         
         const data = await response.json();
+        setSteamProfileId(data.steamID);
         return data.steamID;
       } catch (err) {
         console.error('Error fetching Steam profile ID:', err);
         setError(err instanceof Error ? err.message : String(err));
         return null;
       }
-    }
-
-    const fetchData = async (steamProfileId: string) => {
-      try {
-        setIsLoadingData(true);
-        
-        const response = await fetch(`http://localhost:3111/api/steam/inventory/${steamProfileId}?appid=730&contextid=2`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          }
-        });
-        
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-          
-          if (response.status === 403) {
-            throw new Error('Steam inventory is private. Please make your Steam inventory public to view items.');
-          } else if (response.status === 404) {
-            throw new Error('No Steam inventory found for this user.');
-          } else {
-            throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
-          }
-        }
-        
-        const data = await response.json();
-        setApiReturns(data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : String(err));
-        console.error('Error fetching Steam inventory:', err);
-      } finally {
-        setIsLoadingData(false);
-      }
     };
 
     const fetchListedAssets = async (walletAddress: string) => {
       try {
         setIsLoadingListedAssets(true);
-        console.log('Fetching listed assets for wallet:', walletAddress);
-        
-        const response = await fetch(`http://localhost:3111/api/walrus/assets/${walletAddress}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          }
-        });
+        const response = await fetch(`http://localhost:3111/api/walrus/assets/${walletAddress}`);
         
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         
         const data = await response.json();
-        console.log('Listed assets response:', data);
         setListedAssets(data.assets || []);
       } catch (err) {
         console.error('Error fetching listed assets:', err);
@@ -136,32 +102,50 @@ export default function ProfilePage() {
     };
 
     const initializeData = async () => {
-      const steamProfileId = await fetchSteamProfileId();
-      if (steamProfileId) {
-        await Promise.all([
-          fetchData(steamProfileId),
-          fetchListedAssets(walletAddress)
-        ]);
-      } else {
-        setIsLoadingData(false);
-      }
+      await fetchSteamProfileId();
+      await fetchListedAssets(walletAddress);
     };
 
     initializeData();
   }, []);
 
-  // Add loading and error states
-  if (isLoadingData || isLoadingListedAssets) {
-    return <div className="min-h-screen pt-8 flex items-center justify-center">
-      <div className="text-white">Loading inventory and listings...</div>
-    </div>;
-  }
+  const fetchInventory = async () => {
+    if (!steamProfileId || !selectedGame) return;
+    
+    try {
+      setIsLoadingData(true);
+      setError(null);
+      
+      const game = SUPPORTED_GAMES.find(g => g.name === selectedGame);
+      if (!game) {
+        throw new Error("Selected game not found");
+      }
 
-  if (error) {
-    return <div className="min-h-screen pt-8 flex items-center justify-center">
-      <div className="text-red-400">Error: {error}</div>
-    </div>;
-  }
+      const response = await fetch(
+        `http://localhost:3111/api/steam/inventory/${steamProfileId}?appid=${game.appId}&contextid=${game.contextId}`
+      );
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        
+        if (response.status === 403) {
+          throw new Error('Steam inventory is private. Please make your Steam inventory public to view items.');
+        } else if (response.status === 404) {
+          throw new Error('No Steam inventory found for this user.');
+        } else {
+          throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+        }
+      }
+      
+      const data = await response.json();
+      setApiReturns(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+      console.error('Error fetching Steam inventory:', err);
+    } finally {
+      setIsLoadingData(false);
+    }
+  };
 
   // Safe access to assets with null check
   const allSteamAssets = apiReturns?.assets?.map((asset: any) => ({
@@ -227,6 +211,19 @@ export default function ProfilePage() {
     {label: "Followers", value: "1.2K"},
     {label: "Following", value: "456"},
   ];
+
+  // Add loading and error states
+  if (isLoadingListedAssets) {
+    return <div className="min-h-screen pt-8 flex items-center justify-center">
+      <div className="text-white">Loading profile data...</div>
+    </div>;
+  }
+
+  if (error) {
+    return <div className="min-h-screen pt-8 flex items-center justify-center">
+      <div className="text-red-400">Error: {error}</div>
+    </div>;
+  }
 
   return (
     <div className="min-h-screen pt-8">
@@ -317,13 +314,59 @@ export default function ProfilePage() {
             </TabsTrigger>
           </TabsList>
 
+          {/* Game Selection */}
+          <div className="mb-8 p-6 bg-white/5 rounded-lg border border-white/10">
+            <div className="flex flex-col md:flex-row gap-4 items-end">
+              <div className="flex-1 w-full">
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Select a game to view inventory
+                </label>
+              <AutocompleteSelect
+                value={selectedGame}
+                onValueChange={setSelectedGame}
+                placeholder="Search for a Steam game..."
+                className="bg-white/5 border-white/20 text-white placeholder:text-gray-400 focus-visible:ring-purple-500"
+              />
+              </div>
+              <Button 
+                onClick={fetchInventory}
+                disabled={!selectedGame || isLoadingData}
+                className="bg-purple-600 hover:bg-purple-700"
+              >
+                {isLoadingData ? "Loading..." : "Load Inventory"}
+              </Button>
+            </div>
+          </div>
+
           {/* All Items */}
           <TabsContent value="all">
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {userAssets.map((item) => (
-                <NFTCard key={item.assetId} item={item} isLoading={isLoading} handleImageLoad={handleImageLoad} />
-              ))}
-            </div>
+            {isLoadingData ? (
+              <div className="flex justify-center items-center h-64">
+                <div className="text-white">Loading inventory...</div>
+              </div>
+            ) : userAssets.length > 0 ? (
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {userAssets.map((item) => (
+                  <NFTCard key={item.assetId} item={item} isLoading={isLoading} handleImageLoad={handleImageLoad} />
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-12 bg-white/5 rounded-lg border border-white/10">
+                {selectedGame ? (
+                  <>
+                    <Box className="w-12 h-12 text-gray-400 mb-4" />
+                    <h3 className="text-xl font-medium text-white mb-2">No items found</h3>
+                    <p className="text-gray-400 mb-4">You don't have any items in your {selectedGame} inventory</p>
+                  </>
+                ) : (
+                  <>
+                    <Box className="w-12 h-12 text-gray-400 mb-4" />
+                    <h3 className="text-xl font-medium text-white mb-2">Select a game to view inventory</h3>
+                    <p className="text-gray-400">Choose a game from the dropdown above to see your items</p>
+                  </>
+                )}
+              </div>
+            )}
           </TabsContent>
 
           {/* On Sale Items */}
@@ -436,7 +479,7 @@ function NFTCard({ item, isLoading, handleImageLoad }: { item: any, isLoading: b
                   className="w-full border-white/20 text-white hover:bg-white/10 bg-transparent px-2 h-8"
                 >
                   <Tag className="w-3 h-3" />
-                  <span className="text-xs ml-1">Pudeez for Sale</span>
+                  <span className="text-xs ml-1">List for Sale</span>
                 </Button>
               </Link>
             )}
