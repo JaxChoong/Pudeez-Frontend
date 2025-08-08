@@ -9,6 +9,7 @@ import ProfilePage from "./pages/ProfilePage"
 import CartPage from "./pages/CartPage"
 import SellPage from "./pages/sell/[assetId]/page"
 import ItemDetailsPage from "./pages/view/[assetId]/page"
+import PurchaseTracker from "./pages/PurchaseTrackerPage"
 import BuyPage from "./pages/buy/[assetId]/page"
 import BidPage from "./pages/bid/[assetId]/page"
 import SignUpPage from "./pages/SignUpPage"
@@ -43,7 +44,7 @@ function App() {
           <Route path="/bid/:assetId" element={<BidPage />} />
           <Route path="/sign-up" element={<SignUpPage />} />
           <Route path="/inventory" element={<InventoryPage />} />
-          
+          <Route path="/purchases" element={<PurchaseTracker />} />
         </Routes>
       </SteamProvider>
     </div>
