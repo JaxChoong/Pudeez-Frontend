@@ -125,7 +125,7 @@ export default function MarketplacePage() {
   const renderGameItemCard = (item: any, isGridView = true) => {
     return (
       <Card
-        key={item.id}
+        key={item.assetid}
         className="cyber-card group cursor-pointer transform hover:scale-105 transition-all duration-300"
       >
         <CardContent className="p-0">
@@ -175,7 +175,8 @@ export default function MarketplacePage() {
 
                 <div className="grid grid-cols-[1fr_auto_auto] gap-2 mb-3">
                   {item.isAuction ? (
-                        <Link to={`/bid/${item.id}`}>
+                        <Link to={`/bid/${item.assetid}`}
+                        state= { item }>
                           <span className="neon-button-pink font-mono uppercase text-xs h-10 px-4 flex items-center justify-center bg-white text-black rounded-md hover:bg-pink-50 transition-all duration-300">
                             <TrendingUp className="w-4 h-4 mr-2" />
                             BID
@@ -183,7 +184,8 @@ export default function MarketplacePage() {
                         </Link>
                   ) : (
                         <Link
-                          to={`/buy/${item.id}`}
+                          to={`/buy/${item.assetid}`}
+                          state= {{ item }}
                           className="neon-button-cyan font-mono uppercase text-xs h-10 px-4 items-center justify-center flex bg-white text-black rounded-md hover:bg-cyan-100 transition-all duration-300"
                         >
                           <Zap className="w-4 h-4 mr-2" />
