@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Input } from "@/components/ui/input"
 import { Search, List, Grid3X3, Filter, Clock, Heart, TrendingUp, Zap, ShoppingCart, Bot, Gamepad2,Ban } from "lucide-react"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
@@ -18,13 +18,36 @@ import {
 import Shimmer from "@/components/Shimmer"
 import { useImageLoading } from "@/hooks/useImageLoading"
 import { cn } from "@/lib/utils"
+import { marketplaceService, type MarketplaceAsset } from "@/services/marketplaceService"
 
 export default function MarketplacePage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedGenre, setSelectedGenre] = useState("all")
   const [selectedGame, setSelectedGame] = useState("all")
   const [viewMode, setViewMode] = useState("grid")
+  const [marketplaceAssets, setMarketplaceAssets] = useState<MarketplaceAsset[]>([])
+  const [isLoadingAssets, setIsLoadingAssets] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const { isLoading, handleImageLoad } = useImageLoading()
+
+  // Fetch marketplace assets on component mount
+  useEffect(() => {
+    const fetchMarketplaceAssets = async () => {
+      try {
+        setIsLoadingAssets(true)
+        setError(null)
+        const response = await marketplaceService.getMarketplaceAssets(100, 0)
+        setMarketplaceAssets(response.assets)
+      } catch (err) {
+        console.error('Error fetching marketplace assets:', err)
+        setError('Failed to load marketplace assets. Please try again later.')
+      } finally {
+        setIsLoadingAssets(false)
+      }
+    }
+
+    fetchMarketplaceAssets()
+  }, [])
 
   // Steam-like game genres
   const genres = [
@@ -52,103 +75,24 @@ export default function MarketplacePage() {
     { id: "rocket-league", label: "ROCKET LEAGUE" },
   ]
 
-  // Steam game items data structure
-  const gameItems = [
+  // Use marketplace assets if available, fallback to static data for demo
+  const gameItems = marketplaceAssets.length > 0 ? marketplaceAssets : [
+    // Static fallback data (keeping one item for when no real data is available)
     {
-      id: "1",
-      title: "AK-47 | Redline",
-      game: "Counter-Strike: Global Offensive",
-      gameId: "csgo",
-      price: "2.5 ETH",
-      steamPrice: "$45.20",
+      id: "demo-1",
+      title: "No items listed yet",
+      game: "Marketplace",
+      gameId: "demo",
+      price: "0 ETH",
+      steamPrice: "$0.00",
       image: "/placeholder.svg?height=300&width=300",
-      genre: "fps",
-      rarity: "Classified",
-      condition: "Field-Tested",
+      genre: "other",
+      rarity: "Common",
+      condition: "New",
       isAuction: false,
-      likes: 1234,
+      likes: 0,
       timeLeft: null,
-      steamMarketUrl: "https://steamcommunity.com/market/listings/730/AK-47%20%7C%20Redline%20%28Field-Tested%29",
-    },
-    {
-      id: "2",
-      title: "Arcana: Fractal Horns of Inner Abysm",
-      game: "Dota 2",
-      gameId: "dota2",
-      price: "8.7 ETH",
-      steamPrice: "$156.99",
-      image: "/placeholder.svg?height=300&width=300",
-      genre: "moba",
-      rarity: "Arcana",
-      condition: "Immortal",
-      isAuction: true,
-      likes: 2341,
-      timeLeft: "2h 34m",
-      steamMarketUrl: "https://steamcommunity.com/market/listings/570/Fractal%20Horns%20of%20Inner%20Abysm",
-    },
-    {
-      id: "3",
-      title: "Unusual Burning Flames Team Captain",
-      game: "Team Fortress 2",
-      gameId: "tf2",
-      price: "15.2 ETH",
-      steamPrice: "$275.00",
-      image: "/placeholder.svg?height=300&width=300",
-      genre: "fps",
-      rarity: "Unusual",
-      condition: "Unique",
-      isAuction: true,
-      likes: 892,
-      timeLeft: "5h 12m",
-      steamMarketUrl: "https://steamcommunity.com/market/listings/440/Unusual%20Team%20Captain",
-    },
-    {
-      id: "4",
-      title: "Assault Rifle - Tempered AK47",
-      game: "Rust",
-      gameId: "rust",
-      price: "1.8 ETH",
-      steamPrice: "$32.50",
-      image: "/placeholder.svg?height=300&width=300",
-      genre: "action",
-      rarity: "Rare",
-      condition: "Factory New",
-      isAuction: false,
-      likes: 567,
-      timeLeft: null,
-      steamMarketUrl: "https://steamcommunity.com/market/listings/252490/Assault%20Rifle%20-%20Tempered%20AK47",
-    },
-    {
-      id: "5",
-      title: "AWP | Dragon Lore",
-      game: "Counter-Strike: Global Offensive",
-      gameId: "csgo",
-      price: "45.0 ETH",
-      steamPrice: "$8,120.00",
-      image: "/placeholder.svg?height=300&width=300",
-      genre: "fps",
-      rarity: "Covert",
-      condition: "Factory New",
-      isAuction: true,
-      likes: 5678,
-      timeLeft: "1d 3h",
-      steamMarketUrl: "https://steamcommunity.com/market/listings/730/AWP%20%7C%20Dragon%20Lore%20%28Factory%20New%29",
-    },
-    {
-      id: "6",
-      title: "Octane: Dune Racer",
-      game: "Rocket League",
-      gameId: "rocket-league",
-      price: "3.2 ETH",
-      steamPrice: "$58.75",
-      image: "/placeholder.svg?height=300&width=300",
-      genre: "sports",
-      rarity: "Limited",
-      condition: "Titanium White",
-      isAuction: false,
-      likes: 1456,
-      timeLeft: null,
-      steamMarketUrl: "https://steamcommunity.com/market/listings/252950/Octane%3A%20Dune%20Racer",
+      steamMarketUrl: "#",
     },
   ]
 
@@ -193,7 +137,7 @@ export default function MarketplacePage() {
                   src={item.image || "/placeholder.svg"}
                   alt={item.title}
                   className={cn(
-                    "w-full aspect-square object-cover group-hover:scale-110 transition-transform duration-500",
+                    "w-full aspect-square object-contain group-hover:scale-110 transition-transform duration-500",
                     isLoading ? "opacity-0" : "opacity-100",
                   )}
                   onLoad={handleImageLoad}
@@ -226,7 +170,6 @@ export default function MarketplacePage() {
                   </div>
                   <div className="text-right">
                     <div className="text-lg font-bold neon-text-pink font-mono">{item.price}</div>
-                    <div className="text-xs text-gray-400 font-mono">Steam: {item.steamPrice}</div>
                   </div>
                 </div>
 
@@ -269,7 +212,7 @@ export default function MarketplacePage() {
                 src={item.image || "/placeholder.svg"}
                 alt={item.title}
                 className={cn(
-                  "w-20 h-20 object-cover rounded-lg flex-shrink-0",
+                  "w-20 h-20 object-contain rounded-lg flex-shrink-0",
                   isLoading ? "opacity-0" : "opacity-100",
                 )}
                 onLoad={handleImageLoad}
@@ -285,7 +228,6 @@ export default function MarketplacePage() {
               </div>
               <div className="text-right">
                 <div className="text-xl font-bold neon-text-pink font-mono mb-1">{item.price}</div>
-                <div className="text-xs text-gray-400 font-mono">Steam: {item.steamPrice}</div>
                 <div className="h-4 font-mono">
                   {item.isAuction && <div className="text-xs text-gray-400">CURRENT BID</div>}
                 </div>
@@ -427,7 +369,35 @@ export default function MarketplacePage() {
           </div>
         </div>
 
-        <Tabs defaultValue="all" className="mb-8">
+        {/* Loading State */}
+        {isLoadingAssets && (
+          <div className="text-center mt-12">
+            <div className="text-cyan-400 font-mono">Loading marketplace items...</div>
+            <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {[...Array(8)].map((_, i) => (
+                <div key={i} className="cyber-card">
+                  <Shimmer className="w-full aspect-square rounded-t-lg" />
+                  <div className="p-4">
+                    <Shimmer className="h-4 w-3/4 mb-2" />
+                    <Shimmer className="h-3 w-1/2" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && (
+          <div className="text-center mt-12 text-red-400 font-mono">
+            <Ban className="w-8 h-8 mb-2 inline-block m-2" />
+            {error}
+          </div>
+        )}
+
+        {/* Content - only show when not loading and no error */}
+        {!isLoadingAssets && !error && (
+          <Tabs defaultValue="all" className="mb-8">
           <TabsList className="cyber-card">
             <TabsTrigger value="all" className="data-[state=active]:neon-button-cyan font-mono uppercase text-xs">
               ALL ITEMS ({filteredItems.length})
@@ -474,9 +444,10 @@ export default function MarketplacePage() {
             </div>
           </TabsContent>
         </Tabs>
+        )} {/* Close the !isLoadingAssets && !error conditional */}
 
         {/* Load More */}
-        {filteredItems.length > 0 && viewMode === "grid" && (
+        {filteredItems.length > 0 && viewMode === "grid" && !isLoadingAssets && (
           <div className="text-center mt-12">
             <Button size="lg" className="neon-button-cyan font-mono uppercase tracking-wider">
               DIVE DEEPER

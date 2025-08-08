@@ -1,25 +1,12 @@
 // app/profile/page.tsx
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link } from "react-router-dom"; 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  Settings,
-  ShoppingCart,
-  TrendingUp,
-  Share,
-  Copy,
-  ExternalLink,
-  Gavel,
-  DollarSign,
-  Tag,
-  Hammer,
-  Box,
-} from "lucide-react";
+import { ExternalLink, Tag, Hammer, Box } from "lucide-react";
 import Shimmer from "@/components/Shimmer";
 import { useImageLoading } from "@/hooks/useImageLoading";
 import { cn } from "@/lib/utils";
@@ -27,10 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { getCookie } from "@/lib/utils";
 
 export default function ProfilePage() {
-  const walletAddress = getCookie("wallet_address");
-  const [isFollowing, setIsFollowing] = useState(false);
-  const { isLoading: isCoverLoading, handleImageLoad: handleCoverLoad } = useImageLoading();
-  const { isLoading: isAvatarLoading, handleImageLoad: handleAvatarLoad } = useImageLoading();
+  // State declarations
   const { isLoading, handleImageLoad } = useImageLoading();
   interface ApiReturns {
     assets?: Array<any>;
@@ -39,10 +23,35 @@ export default function ProfilePage() {
   const [apiReturns, setApiReturns] = useState<ApiReturns | null>(null);
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
+  const [listedAssets, setListedAssets] = useState<Array<any>>([]);
+  const [isLoadingListedAssets, setIsLoadingListedAssets] = useState(false);
+  const hasFetched = useRef(false);
+  
   useEffect(() => {
+    // Prevent duplicate calls
+    if (hasFetched.current) {
+      console.log('ProfilePage - Already fetched, skipping');
+      return;
+    }
+
+    const addr = getCookie("wallet_address");
+    
+    // More robust validation
+    if (!addr || addr === 'null' || addr === 'undefined' || addr.trim() === '') {
+      console.log('ProfilePage - No valid wallet address found');
+      setError("No wallet address found. Please connect your wallet.");
+      setIsLoadingData(false);
+      return;
+    }
+
+    hasFetched.current = true;
+    const walletAddress = addr.trim();
+    console.log('ProfilePage - Using wallet address:', walletAddress);
+
+    // Only proceed if walletAddress is present and valid
     const fetchSteamProfileId = async () => {
       try {
+        console.log('Sending request to get Steam ID with wallet address:', walletAddress);
         const response = await fetch(`http://localhost:3111/api/user/get_steamid`,{
             method: 'POST',
             headers: {
@@ -56,6 +65,8 @@ export default function ProfilePage() {
         }
         
         const data = await response.json();
+        // console.log('Full backend response:', data);
+        // console.log('Fetched Steam ID from backend:', data.steamID);
         return data.steamID;
       } catch (err) {
         console.error('Error fetching Steam profile ID:', err);
@@ -68,10 +79,42 @@ export default function ProfilePage() {
       try {
         setIsLoadingData(true);
         
-        // Option 1: Use your backend as a proxy to Steam Web API
-        // Your backend should make the call to: 
-        // https://api.steampowered.com/IEconItems_730/GetPlayerItems/v0001/?key=YOUR_API_KEY&steamid=${steamProfileId}&format=json
-        const response = await fetch(`http://localhost:3111/api/steam/inventory/${steamProfileId}`, {
+        const response = await fetch(`http://localhost:3111/api/steam/inventory/${steamProfileId}?appid=730&contextid=2`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+          
+          if (response.status === 403) {
+            throw new Error('Steam inventory is private. Please make your Steam inventory public to view items.');
+          } else if (response.status === 404) {
+            throw new Error('No Steam inventory found for this user.');
+          } else {
+            throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+          }
+        }
+        
+        const data = await response.json();
+        // console.log('Steam inventory response:', data);
+        setApiReturns(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : String(err));
+        console.error('Error fetching Steam inventory:', err);
+      } finally {
+        setIsLoadingData(false);
+      }
+    };
+
+    const fetchListedAssets = async (walletAddress: string) => {
+      try {
+        setIsLoadingListedAssets(true);
+        console.log('Fetching listed assets for wallet:', walletAddress);
+        
+        const response = await fetch(`http://localhost:3111/api/walrus/assets/${walletAddress}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -83,27 +126,28 @@ export default function ProfilePage() {
         }
         
         const data = await response.json();
-        
-        // Handle Steam Web API response structure
-        if (data.result && data.result.items) {
-          setApiReturns({ assets: data.result.items });
-        } else {
-          setApiReturns(data);
-        }
+        console.log('Listed assets response:', data);
+        setListedAssets(data.assets || []);
       } catch (err) {
-        setError(err instanceof Error ? err.message : String(err));
-        console.error('Error fetching Steam inventory:', err);
+        console.error('Error fetching listed assets:', err);
+        // Don't set error state for listed assets since it's not critical
+        setListedAssets([]);
       } finally {
-        setIsLoadingData(false);
+        setIsLoadingListedAssets(false);
       }
     };
 
     const initializeData = async () => {
       const steamProfileId = await fetchSteamProfileId();
-      console.log("Steam Profile ID:", steamProfileId);
-      
+      // console.log("Steam Profile ID:", steamProfileId);
       if (steamProfileId) {
-        await fetchData(steamProfileId);
+        // Fetch both Steam inventory and listed assets in parallel
+        await Promise.all([
+          fetchData(steamProfileId),
+          fetchListedAssets(walletAddress)
+        ]);
+      } else {
+        setIsLoadingData(false);
       }
     };
 
@@ -111,9 +155,9 @@ export default function ProfilePage() {
   }, []);
 
   // Add loading and error states
-  if (isLoadingData) {
+  if (isLoadingData || isLoadingListedAssets) {
     return <div className="min-h-screen pt-8 flex items-center justify-center">
-      <div className="text-white">Loading inventory...</div>
+      <div className="text-white">Loading inventory and listings...</div>
     </div>;
   }
 
@@ -124,7 +168,7 @@ export default function ProfilePage() {
   }
 
   // Safe access to assets with null check
-  const userAssets = apiReturns?.assets?.map((asset: any) => ({
+  const allSteamAssets = apiReturns?.assets?.map((asset: any) => ({
     assetId: asset.assetid,
     classId: asset.classid,
     instanceId: asset.instanceid,
@@ -133,136 +177,65 @@ export default function ProfilePage() {
     amount: asset.amount,
     contextId: asset.contextid,
     status: "inventory",
-    description: "none",
-    price: "0.01 ETH",
   })) || [];
 
-  console.log("User Assets:", userAssets);
-  const userStats = [
-    {label : "Items in Inventory", value: userAssets.length.toString()},
-    { label: "Items On Sale", value: "4" },
-    { label: "Followers", value: "1.2K" },
-    { label: "Following", value: "456" },
-  ];
+  // Filter out assets that are already listed
+  const listedAssetIds = new Set(listedAssets.map(asset => asset.assetid));
+  const userAssets = allSteamAssets.filter(asset => !listedAssetIds.has(asset.assetId));
 
+  console.log('ProfilePage - Listed assets:', listedAssets);
+  console.log('ProfilePage - Listed asset IDs:', listedAssetIds);
+  console.log('ProfilePage - All Steam assets:', allSteamAssets);
+  console.log('ProfilePage - Filtered user assets:', userAssets);
 
+  // Helper function to format SUI prices intelligently
+  const formatSuiPrice = (price: string): string => {
+    const num = parseFloat(price || '0');
+    if (num === 0) return "0 SUI";
+    
+    // Remove trailing zeros after decimal point
+    const formatted = num.toFixed(4).replace(/\.?0+$/, '');
+    return `${formatted} SUI`;
+  };
 
-  const onSaleNFTs = [
-    {
-      assetId: 1,
-      name: "Mystic Fox",
-      collection: "Urban Beasts",
-      price: "3.1 ETH",
-      iconUrl: "/placeholder.svg?height=300&width=300",
-      status: "sale"
-    },
-    {
-      assetId: 2,
-      name: "Silent Peak",
-      collection: "Nature Spirits",
-      price: "1.7 ETH",
-      iconUrl: "/placeholder.svg?height=300&width=300",
-      status: "sale"
-    },
-  ];
+  // Transform listed assets into the format expected by the UI
+  const onSaleNFTs = listedAssets
+    .filter(asset => !asset.listingType || asset.listingType === 'sale')
+    .map(asset => ({
+      assetId: asset.assetid,
+      classId: asset.classid,
+      instanceId: asset.instanceid,
+      iconUrl: asset.icon_url ? `https://steamcommunity-a.akamaihd.net/economy/image/${asset.icon_url}` : "/placeholder.svg",
+      name: asset.name || 'Unknown Item',
+      price: formatSuiPrice(asset.price || '0'), // Price is already stored in SUI format, format intelligently
+      collection: "Listed Item",
+      status: "sale",
+      blobId: asset.blobId,
+      walletAddress: asset.walletAddress,
+      uploadedAt: asset.uploadedAt
+    }));
 
-  const inAuctionNFTs = [
-    {
-      assetId: 3,
-      name: "Neon Samurai",
-      collection: "Cyber Legends",
-      currentBid: "4.5 ETH",
-      endsIn: "2h 30m",
-      iconUrl: "/placeholder.svg?height=300&width=300",
-      status: "auction"
-    },
-    {
-      assetId: 4,
-      name: "Dream Portal",
-      collection: "Mystic Realms",
-      currentBid: "2.2 ETH",
-      endsIn: "5h 12m",
-      iconUrl: "/placeholder.svg?height=300&width=300",
-      status: "auction"
-    },
-  ];
-
-  const allNFTs = [...userAssets, ...onSaleNFTs, ...inAuctionNFTs];
+  const inAuctionNFTs = listedAssets
+    .filter(asset => asset.listingType === 'auction')
+    .map(asset => ({
+      assetId: asset.assetid,
+      classId: asset.classid,
+      instanceId: asset.instanceid,
+      iconUrl: asset.icon_url ? `https://steamcommunity-a.akamaihd.net/economy/image/${asset.icon_url}` : "/placeholder.svg",
+      name: asset.name || 'Unknown Item',
+      currentBid: formatSuiPrice(asset.price || '0'), // Price is already stored in SUI format, format intelligently
+      endsIn: "Ongoing", // Could be calculated from auction duration
+      collection: "Auction Item",
+      status: "auction",
+      blobId: asset.blobId,
+      walletAddress: asset.walletAddress,
+      uploadedAt: asset.uploadedAt
+    }));
 
   return (
     <div className="min-h-screen pt-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Profile Header */}
-        <div className="mb-12">
-          <div className="relative">
-            <div className="h-48 md:h-64 bg-gradient-to-r from-purple-600/20 to-pink-600/20 rounded-xl overflow-hidden">
-              {isCoverLoading && <Shimmer className="w-full h-full" />}
-              <img
-                src="/placeholder.svg?height=256&width=1024"
-                alt="Profile Cover"
-                className={cn(
-                  "w-full h-full object-cover",
-                  isCoverLoading ? "opacity-0" : "opacity-100"
-                )}
-                onLoad={handleCoverLoad}
-              />
-            </div>
-
-            <div className="relative -mt-16 px-6">
-              <div className="flex flex-col md:flex-row items-start md:items-end gap-6">
-                <Avatar className="w-32 h-32 border-4 border-white/20 bg-gradient-to-r from-purple-500 to-pink-500">
-                  {isAvatarLoading && <Shimmer className="w-full h-full rounded-full" />}
-                  <AvatarImage 
-                    src="/placeholder.svg?height=128&width=128" 
-                    className={cn(isAvatarLoading ? "opacity-0" : "opacity-100")}
-                    onLoad={handleAvatarLoad}
-                  />
-                </Avatar>
-
-                <div className="flex-1">
-                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                    <div>
-                      <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">John Doe</h1>
-                      <p className="text-gray-300 mb-2">@johndoe_nft</p>
-                      <p className="text-gray-400 max-w-2xl">
-                        NFT artist and collector, sharing visions through blockchain.
-                      </p>
-                    </div>
-                    <div className="flex gap-3 border-white mt-10">
-                      <Button variant="outline" size="sm" className="border-white/20 text-white hover:bg-white/10 bg-transparent ">
-                        <Share className="w-4 h-4 mr-2" /> Share
-                      </Button>
-                      <Button variant="outline" size="sm" className="border-white/20 text-white hover:bg-white/10 bg-transparent">
-                        <Copy className="w-4 h-4 mr-2" /> Copy Link
-                      </Button>
-                      <Button
-                        onClick={() => setIsFollowing(!isFollowing)}
-                        className={isFollowing ? "bg-gray-600 hover:bg-gray-700" : "bg-purple-600 hover:bg-purple-700"}
-                      >
-                        {isFollowing ? "Following" : "Follow"}
-                      </Button>
-                      <Button variant="outline" size="sm" className="border-white/20 text-white hover:bg-white/10 bg-transparent">
-                        <Settings className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-8">
-            {userStats.map((stat, index) => (
-              <Card key={index} className="bg-white/5 border-white/10 backdrop-blur-sm">
-                <CardContent className="p-6 text-center">
-                  <div className="text-2xl md:text-3xl font-bold text-white mb-1">{stat.value}</div>
-                  <div className="text-gray-400 text-sm">{stat.label}</div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
+        {/* Profile Header and Stats would go here */}
 
         {/* Tabs for NFTs */}
         <Tabs defaultValue="all" className="mb-8">
@@ -375,7 +348,8 @@ function NFTCard({ item, isLoading, handleImageLoad }: { item: any, isLoading: b
           {/* Buttons Container - Fixed at bottom */}
           <div className="flex justify-between gap-2 pt-2">
             <Link 
-              to={`/view/${item.assetId}`} 
+              to={`/view/${item.assetId}`}
+              state={item}
               className={item.status === "inventory" ? "w-1/3" : "w-full"}
             >
               <Button 
@@ -389,7 +363,7 @@ function NFTCard({ item, isLoading, handleImageLoad }: { item: any, isLoading: b
             </Link>
             
             {item.status === "inventory" && (
-              <Link to={`/sell/${item.assetId}`} className="w-2/3">
+              <Link to={`/sell/${item.assetId}`} state={{ item }} className="w-2/3">
                 <Button 
                   variant="outline" 
                   size="sm" 

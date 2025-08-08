@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Link, useLocation } from "react-router-dom"
-import { useCurrentAccount, ConnectButton } from "@mysten/dapp-kit"
+import { useCurrentAccount, ConnectButton, useDisconnectWallet } from "@mysten/dapp-kit"
 import { Button } from "./ui/button"
 import {
   DropdownMenu,
@@ -22,7 +22,6 @@ import {
   X,
   Gamepad2,
   Palette,
-  Wallet,
   Zap,
 } from "lucide-react"
 
@@ -39,13 +38,9 @@ function getCookie(name: string): string {
   return '';
 }
 
-// Helper to delete a cookie by name
-function deleteCookie(name: string): void {
-  document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
-}
-
 function WalletConnectWrapper() {
   const account = useCurrentAccount();
+  const { mutate: disconnect } = useDisconnectWallet();
   const [savedAddress, setSavedAddress] = useState("");
 
   useEffect(() => {
@@ -55,12 +50,46 @@ function WalletConnectWrapper() {
   const formatAddress = (address: string) => `${address.slice(0, 6)}...${address.slice(-4)}`;
 
   const handleDisconnect = () => {
-    deleteCookie("wallet_address");
-    window.location.reload();
+    // Disconnect from Sui dApp kit first
+    if (account) {
+      disconnect();
+    }
+    
+    // Clear all localStorage and sessionStorage
+    localStorage.clear();
+    sessionStorage.clear();
+    
+    // Delete all cookies
+    document.cookie.split(';').forEach(cookie => {
+      const eqPos = cookie.indexOf('=');
+      const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+      document.cookie = name.trim() + '=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;';
+    });
+    
+    // Reset saved address
+    setSavedAddress("");
+    
+    // Force reload to ensure clean state
+    setTimeout(() => {
+      window.location.reload();
+    }, 100); // Small delay to ensure disconnect completes
   };
 
   if (account) {
-    return <ConnectButton />;
+    return (
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button className="px-4 py-2 bg-cyan-600 text-white rounded font-mono text-xs hover:bg-cyan-700 transition">
+            {formatAddress(account.address)}
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem onClick={handleDisconnect} className="text-red-500 cursor-pointer">
+            Disconnect
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    );
   }
   if (savedAddress) {
     return (
@@ -78,26 +107,24 @@ function WalletConnectWrapper() {
       </DropdownMenu>
     );
   }
-  return <ConnectButton />;
+  return (
+    <div className="wallet-connect-wrapper">
+      <ConnectButton connectText="Connect Wallet" />
+    </div>
+  );
 }
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [cartItems] = useState(3) // Mock cart items count
   const location = useLocation()
-  const currentAccount = useCurrentAccount()
 
   const navItems = [
     { path: "/marketplace", label: "NEXUS", icon: Search },
     { path: "/chat", label: "COMM", icon: MessageCircle },
     { path: "/history", label: "LOG", icon: History },
     { path: "/profile", label: "USER", icon: User },
-    { path: "/wallet", label: "LINK", icon: Wallet },
   ]
-
-  const formatAddress = (address: string) => {
-    return `${address.slice(0, 6)}...${address.slice(-4)}`
-  }
 
   return (
     <nav className="sticky top-0 z-50 bg-black/60 backdrop-blur-lg border-b border-cyan-400/20 scan-lines">
