@@ -3,13 +3,16 @@ import { useParams, useLocation } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { ShoppingCart, Gavel, Share } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { ShoppingCart, Gavel, Share, X, HelpCircle } from "lucide-react";
 import Shimmer from "@/components/Shimmer";
 import { cn } from "@/lib/utils";
 import { useState, useEffect, useCallback } from "react";
 
 export default function BuyPage() {
   const [isImageLoading, setIsImageLoading] = useState(true);
+  const [showBuyModal, setShowBuyModal] = useState(false);
+  const [steamTradeUrl, setSteamTradeUrl] = useState("");
   const { assetId } = useParams();
   const location = useLocation();
 
@@ -62,6 +65,39 @@ export default function BuyPage() {
   }, [assetId, fetchAsset, item]);
 
   const handleImageLoad = () => setIsImageLoading(false);
+
+  // Calculate costs for the modal
+  const calculateCosts = () => {
+    const basePrice = parseFloat(item?.price?.replace(/[^\d.]/g, '') || '0');
+    const transactionFee = 0.025; // 2.5% - replace this later
+    const feeAmount = basePrice * transactionFee;
+    const total = basePrice + feeAmount;
+    
+    return {
+      basePrice: basePrice.toFixed(3),
+      feeAmount: feeAmount.toFixed(3),
+      total: total.toFixed(3)
+    };
+  };
+
+  // Handle buy button click
+  const handleBuyClick = () => {
+    setShowBuyModal(true);
+  };
+
+  // Handle modal close
+  const handleCloseModal = () => {
+    setShowBuyModal(false);
+    setSteamTradeUrl("");
+  };
+
+  // Handle confirm purchase
+  const handleConfirmPurchase = () => {
+    // This will be replaced with actual purchase logic later
+    console.log("Purchase confirmed with trade URL:", steamTradeUrl);
+    alert("Purchase functionality will be implemented soon!");
+    handleCloseModal();
+  };
 
   const imageUrl =
     item?.image ||
@@ -153,7 +189,10 @@ export default function BuyPage() {
 
             {/* Action Buttons */}
             <div className="flex space-x-4 pt-4">
-              <Button className="flex-1 bg-purple-600 hover:bg-purple-700">
+              <Button 
+                className="flex-1 bg-purple-600 hover:bg-purple-700"
+                onClick={handleBuyClick}
+              >
                 {item.isAuction ? (
                   <>
                     <Gavel className="w-4 h-4 mr-2" />
@@ -173,6 +212,117 @@ export default function BuyPage() {
             </div>
           </div>
         </div>
+
+        {/* Buy Modal */}
+        {showBuyModal && (
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-gray-900 border border-white/20 rounded-2xl max-w-md w-full mx-4 shadow-2xl">
+              {/* Modal Header */}
+              <div className="flex items-center justify-between p-6 border-b border-white/10">
+                <h3 className="text-xl font-bold text-white">
+                  {item.isAuction ? 'Place Bid' : 'Purchase Item'}
+                </h3>
+                <button
+                  onClick={handleCloseModal}
+                  className="text-gray-400 hover:text-white transition-colors"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              {/* Modal Body */}
+              <div className="p-6 space-y-6">
+                {/* Item Summary */}
+                <div className="flex items-center gap-4 p-4 bg-black/20 rounded-lg border border-white/10">
+                  <div className="w-16 h-16 bg-black/20 rounded-lg flex items-center justify-center overflow-hidden">
+                    {imageUrl && (
+                      <img
+                        src={imageUrl}
+                        alt={item.name || item.title}
+                        className="w-full h-full object-contain"
+                      />
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-white text-sm">
+                      {item.title || item.name || "Untitled Asset"}
+                    </h4>
+                    <p className="text-gray-400 text-xs">{item.game}</p>
+                  </div>
+                </div>
+
+                {/* Steam Trade URL Input */}
+                <div className="space-y-3">
+                  <label className="block text-sm font-medium text-white">
+                    Steam Trade URL *
+                  </label>
+                  <Input
+                    type="url"
+                    placeholder="https://steamcommunity.com/tradeoffer/new/?partner=..."
+                    value={steamTradeUrl}
+                    onChange={(e) => setSteamTradeUrl(e.target.value)}
+                    className="w-full bg-black/40 border-white/20 text-white placeholder:text-gray-500 font-mono text-sm"
+                  />
+                  
+                  {/* How to find trade URL link */}
+                  <div className="flex items-center gap-2 text-sm">
+                    <button
+                      className="text-purple-400 hover:text-purple-300 underline transition-colors"
+                      onClick={() => window.open('https://www.youtube.com/watch?v=ZLFP1E-nXSU&t=2s', '_blank')}
+                    >
+                      How?
+                    </button>
+                    <span className="text-gray-500">- How to find your Steam Trade URL</span>
+                  </div>
+                </div>
+
+                {/* Cost Breakdown */}
+                <div className="space-y-3 p-4 bg-black/20 rounded-lg border border-white/10">
+                  <h5 className="font-semibold text-white text-sm mb-3">Cost Breakdown</h5>
+                  
+                  {(() => {
+                    const costs = calculateCosts();
+                    return (
+                      <>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-300">Item Price:</span>
+                          <span className="text-white font-mono">{costs.basePrice} SUI</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-300">Transaction Fee:</span>
+                          <span className="text-white font-mono">{costs.feeAmount} SUI</span>
+                        </div>
+                        <div className="h-px bg-white/10 my-2"></div>
+                        <div className="flex justify-between text-base font-semibold">
+                          <span className="text-white">Total:</span>
+                          <span className="text-purple-400 font-mono">{costs.total} SUI</span>
+                        </div>
+                      </>
+                    );
+                  })()}
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-3 pt-2">
+                  <Button
+                    variant="outline"
+                    onClick={handleCloseModal}
+                    className="flex-1 border-white/20 text-white hover:bg-white/10"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleConfirmPurchase}
+                    disabled={!steamTradeUrl.trim()}
+                    className="flex-1 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {item.isAuction ? 'Place Bid' : 'Confirm Purchase'}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
