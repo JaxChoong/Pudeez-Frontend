@@ -24,6 +24,7 @@ import {
   Palette,
   Zap,
 } from "lucide-react"
+import path from "path"
 
 // Helper to get cookie value by name
 function getCookie(name: string): string {
@@ -124,6 +125,7 @@ export default function Navbar() {
     { path: "/chat", label: "COMM", icon: MessageCircle },
     { path: "/history", label: "LOG", icon: History },
     { path: "/profile", label: "USER", icon: User },
+    {path: "/inventory", label: "INVENTORY", icon: Gamepad2 },
   ]
 
   return (

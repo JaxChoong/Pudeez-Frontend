@@ -15,6 +15,7 @@ import BidPage from "./pages/bid/[assetId]/page"
 import SignUpPage from "./pages/SignUpPage"
 import { useEffect } from "react"
 import { setCookie } from "@/lib/utils"
+import InventoryPage from "./pages/InventoryPage"
 
 function App() {
   const currentAccount = useCurrentAccount();
@@ -43,6 +44,8 @@ function App() {
         <Route path="/buy/:assetId" element={<BuyPage />} />
         <Route path="/bid/:assetId" element={<BidPage />} />
         <Route path="/sign-up" element={<SignUpPage />} />
+        <Route path="/inventory" element={<InventoryPage />} />
+        
       </Routes>
     </div>
   );
