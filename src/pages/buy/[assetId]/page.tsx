@@ -1,3 +1,4 @@
+// src/pages/view/[appId]/page.tsx
 "use client";
 import { useParams, useLocation } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
@@ -8,6 +9,10 @@ import { ShoppingCart, Gavel, Share, X, HelpCircle } from "lucide-react";
 import Shimmer from "@/components/Shimmer";
 import { cn } from "@/lib/utils";
 import { useState, useEffect, useCallback } from "react";
+import { SteamEscrowClient } from "@/services/escrowService";
+import { useSignAndExecuteTransaction, useSuiClient } from "@mysten/dapp-kit";
+
+
 
 export default function BuyPage() {
   const [isImageLoading, setIsImageLoading] = useState(true);
@@ -15,6 +20,8 @@ export default function BuyPage() {
   const [steamTradeUrl, setSteamTradeUrl] = useState("");
   const { assetId } = useParams();
   const location = useLocation();
+const [showTradeDialog, setShowTradeDialog] = useState(false);
+  const [tradeUrl, setTradeUrl] = useState("");
 
   // Parse initial item from location.state
   const initialItem =
