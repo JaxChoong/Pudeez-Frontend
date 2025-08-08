@@ -119,10 +119,6 @@ export default function SellPage() {
       return;
     }
 
-    if (!steamId) {
-      setError("Please select a game");
-      return;
-    }
 
     if (listingType === 'sale' && !price) {
       setError('Please enter a sale price');
@@ -461,7 +457,7 @@ export default function SellPage() {
                   </Button>
                   <Button 
                     type="submit" 
-                    disabled={isSubmitting || !currentAccount || !steamId}
+                    disabled={isSubmitting || !currentAccount}
                     className="bg-purple-600 hover:bg-purple-700"
                   >
                     {isSubmitting ? 'Listing...' : (listingType === 'sale' ? 'Pudeez for Sale' : 'Start Auction')}
