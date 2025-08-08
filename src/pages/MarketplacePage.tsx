@@ -19,11 +19,13 @@ import Shimmer from "@/components/Shimmer"
 import { useImageLoading } from "@/hooks/useImageLoading"
 import { cn } from "@/lib/utils"
 import { marketplaceService, type MarketplaceAsset } from "@/services/marketplaceService"
+import { GameFilterSelect } from "@/components/ui/game-filter-select"
 
 export default function MarketplacePage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedGenre, setSelectedGenre] = useState("all")
-  const [selectedGame, setSelectedGame] = useState("all")
+  const [selectedGame, setSelectedGame] = useState<string | null>(null)
+  const [selectedGameName, setSelectedGameName] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState("grid")
   const [marketplaceAssets, setMarketplaceAssets] = useState<MarketplaceAsset[]>([])
   const [isLoadingAssets, setIsLoadingAssets] = useState(true)
@@ -49,6 +51,12 @@ export default function MarketplacePage() {
     fetchMarketplaceAssets()
   }, [])
 
+  // Handle game selection from the filter
+  const handleGameSelection = (appId: string | null, gameName: string | null) => {
+    setSelectedGame(appId)
+    setSelectedGameName(gameName)
+  }
+
   // Steam-like game genres
   const genres = [
     { id: "all", label: "ALL GENRES" },
@@ -60,19 +68,6 @@ export default function MarketplacePage() {
     { id: "racing", label: "RACING" },
     { id: "sports", label: "SPORTS" },
     { id: "simulation", label: "SIMULATION" },
-  ]
-
-  // Popular Steam games
-  const games = [
-    { id: "all", label: "ALL GAMES" },
-    { id: "csgo", label: "CS:GO" },
-    { id: "dota2", label: "DOTA 2" },
-    { id: "tf2", label: "TF2" },
-    { id: "rust", label: "RUST" },
-    { id: "pubg", label: "PUBG" },
-    { id: "apex", label: "APEX LEGENDS" },
-    { id: "valorant", label: "VALORANT" },
-    { id: "rocket-league", label: "ROCKET LEAGUE" },
   ]
 
   // Use marketplace assets if available, fallback to static data for demo
@@ -101,7 +96,7 @@ export default function MarketplacePage() {
       item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.game.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesGenre = selectedGenre === "all" || item.genre === selectedGenre
-    const matchesGame = selectedGame === "all" || item.gameId === selectedGame
+    const matchesGame = !selectedGame || item.gameId === selectedGame
     return matchesSearch && matchesGenre && matchesGame
   })
 
@@ -327,24 +322,13 @@ export default function MarketplacePage() {
                   <DropdownMenuLabel className="font-mono text-pink-400 uppercase tracking-wider">
                     Game Filter
                   </DropdownMenuLabel>
-                  <div className="p-2">
-                    <div className="grid grid-cols-2 gap-2">
-                      {games.map((game) => (
-                        <Button
-                          key={game.id}
-                          variant={selectedGame === game.id ? "default" : "outline"}
-                          size="sm"
-                          onClick={() => setSelectedGame(game.id)}
-                          className={
-                            selectedGame === game.id
-                              ? "neon-button-pink font-mono text-xs"
-                              : "border-white/20 text-white hover:bg-white/10 font-mono text-xs"
-                          }
-                        >
-                          {game.label}
-                        </Button>
-                      ))}
-                    </div>
+                  <div className="p-3" style = {{paddingBottom: "10rem"}}>
+                    <GameFilterSelect
+                      value={selectedGame}
+                      onValueChange={handleGameSelection}
+                      placeholder="Search for a game..."
+                      className="w-full"
+                    />
                   </div>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -399,7 +383,24 @@ export default function MarketplacePage() {
 
         {/* Content - only show when not loading and no error */}
         {!isLoadingAssets && !error && (
-          <Tabs defaultValue="all" className="mb-8">
+          <>
+            {/* Selected Game Display */}
+            {selectedGameName && (
+              <div className="mb-4 p-3 bg-purple-500/10 border border-purple-500/30 rounded-lg">
+                <div className="flex items-center gap-2 text-purple-300 font-mono text-sm">
+                  <Gamepad2 className="w-4 h-4" />
+                  <span>Filtering by game: <span className="text-white font-semibold">{selectedGameName}</span></span>
+                  <button
+                    onClick={() => handleGameSelection(null, null)}
+                    className="ml-auto text-xs hover:text-white bg-purple-500/20 hover:bg-purple-500/30 px-2 py-1 rounded"
+                  >
+                    Clear Filter
+                  </button>
+                </div>
+              </div>
+            )}
+            
+            <Tabs defaultValue="all" className="mb-8">
           <TabsList className="cyber-card">
             <TabsTrigger value="all" className="data-[state=active]:neon-button-cyan font-mono uppercase text-xs">
               ALL ITEMS ({filteredItems.length})
@@ -446,6 +447,7 @@ export default function MarketplacePage() {
             </div>
           </TabsContent>
         </Tabs>
+        </> 
         )} {/* Close the !isLoadingAssets && !error conditional */}
 
         {/* Load More */}
