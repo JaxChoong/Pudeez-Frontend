@@ -33,6 +33,7 @@ export default function ProfilePage() {
   const [isFollowing, setIsFollowing] = useState(false);
   const [selectedGame, setSelectedGame] = useState<string>("");
   const [steamProfileId, setSteamProfileId] = useState<string | null>(null);
+  const [inventoryError, setInventoryError] = useState<string | null>(null);
   
   interface ApiReturns {
     assets?: Array<any>;
@@ -115,6 +116,8 @@ export default function ProfilePage() {
     try {
       setIsLoadingData(true);
       setError(null);
+      setInventoryError(null);
+      setApiReturns(null); // Clear previous results
       
       const game = SUPPORTED_GAMES.find(g => g.name === selectedGame);
       if (!game) {
@@ -128,9 +131,7 @@ export default function ProfilePage() {
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
         
-        if (response.status === 403) {
-          throw new Error('Steam inventory is private. Please make your Steam inventory public to view items.');
-        } else if (response.status === 404) {
+        if (response.status === 404) {
           throw new Error('No Steam inventory found for this user.');
         } else {
           throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
@@ -140,7 +141,13 @@ export default function ProfilePage() {
       const data = await response.json();
       setApiReturns(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      if (err instanceof Error && err.message.includes('403')) {
+        // Handle private inventory or empty inventory case gracefully
+        setInventoryError('No items found or inventory is private');
+        setApiReturns({ assets: [] }); // Set empty inventory
+      } else {
+        setError(err instanceof Error ? err.message : String(err));
+      }
       console.error('Error fetching Steam inventory:', err);
     } finally {
       setIsLoadingData(false);
@@ -216,12 +223,6 @@ export default function ProfilePage() {
   if (isLoadingListedAssets) {
     return <div className="min-h-screen pt-8 flex items-center justify-center">
       <div className="text-white">Loading profile data...</div>
-    </div>;
-  }
-
-  if (error) {
-    return <div className="min-h-screen pt-8 flex items-center justify-center">
-      <div className="text-red-400">Error: {error}</div>
     </div>;
   }
 
@@ -343,6 +344,12 @@ export default function ProfilePage() {
             {isLoadingData ? (
               <div className="flex justify-center items-center h-64">
                 <div className="text-white">Loading inventory...</div>
+              </div>
+            ) : inventoryError ? (
+              <div className="flex flex-col items-center justify-center py-12 bg-white/5 rounded-lg border border-white/10">
+                <Box className="w-12 h-12 text-gray-400 mb-4" />
+                <h3 className="text-xl font-medium text-white mb-2">No items found</h3>
+                <p className="text-gray-400 mb-4">Your inventory is empty or private for {selectedGame}</p>
               </div>
             ) : userAssets.length > 0 ? (
               <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
