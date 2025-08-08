@@ -210,6 +210,7 @@ export default function SellPage() {
                     onFocus={() => setShowDropdown(true)}
                     onBlur={() => setTimeout(() => setShowDropdown(false), 200)} // Small delay to allow click
                     className="bg-white/5 border-white/10 text-white"
+                    required
                   />
                   {showDropdown && filteredGames.length > 0 && (
                     <div 
@@ -348,7 +349,7 @@ export default function SellPage() {
                     disabled={isSubmitting || !currentAccount || !steamId}
                     className="bg-purple-600 hover:bg-purple-700"
                   >
-                    {isSubmitting ? 'Listing...' : (listingType === 'sale' ? 'List for Sale' : 'Start Auction')}
+                    {isSubmitting ? 'Listing...' : (listingType === 'sale' ? 'Pudeez for Sale' : 'Start Auction')}
                   </Button>
                 </div>
               </form>
