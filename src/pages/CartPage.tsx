@@ -144,9 +144,9 @@ export default function CartPage() {
 
                           <div className="text-right">
                             <div className="text-xl font-bold text-white">
-                              {(item.price * item.quantity).toFixed(2)} ETH
+                              {(item.price * item.quantity).toFixed(2)} Sui
                             </div>
-                            {item.quantity > 1 && <div className="text-sm text-gray-400">{item.price} ETH each</div>}
+                            {item.quantity > 1 && <div className="text-sm text-gray-400">{item.price} Sui each</div>}
                           </div>
                         </div>
                       </div>
@@ -166,20 +166,20 @@ export default function CartPage() {
                   <div className="space-y-3">
                     <div className="flex justify-between text-white">
                       <span>Subtotal</span>
-                      <span>{subtotal.toFixed(2)} ETH</span>
+                      <span>{subtotal.toFixed(2)} Sui</span>
                     </div>
                     <div className="flex justify-between text-white">
                       <span>Platform Fee (2.5%)</span>
-                      <span>{platformFee.toFixed(3)} ETH</span>
+                      <span>{platformFee.toFixed(3)} Sui</span>
                     </div>
                     <div className="flex justify-between text-white">
                       <span>Estimated Gas Fee</span>
-                      <span>{gasFee.toFixed(3)} ETH</span>
+                      <span>{gasFee.toFixed(3)} Sui</span>
                     </div>
                     <Separator className="bg-white/20" />
                     <div className="flex justify-between text-xl font-bold text-white">
                       <span>Total</span>
-                      <span>{total.toFixed(3)} ETH</span>
+                      <span>{total.toFixed(3)} Sui</span>
                     </div>
                   </div>
 

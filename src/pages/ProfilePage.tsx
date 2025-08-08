@@ -23,6 +23,8 @@ export default function ProfilePage() {
   const [apiReturns, setApiReturns] = useState<ApiReturns | null>(null);
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [listedAssets, setListedAssets] = useState<Array<any>>([]);
+  const [isLoadingListedAssets, setIsLoadingListedAssets] = useState(false);
   const hasFetched = useRef(false);
   
   useEffect(() => {
@@ -107,11 +109,43 @@ export default function ProfilePage() {
       }
     };
 
+    const fetchListedAssets = async (walletAddress: string) => {
+      try {
+        setIsLoadingListedAssets(true);
+        console.log('Fetching listed assets for wallet:', walletAddress);
+        
+        const response = await fetch(`http://localhost:3111/api/walrus/assets/${walletAddress}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('Listed assets response:', data);
+        setListedAssets(data.assets || []);
+      } catch (err) {
+        console.error('Error fetching listed assets:', err);
+        // Don't set error state for listed assets since it's not critical
+        setListedAssets([]);
+      } finally {
+        setIsLoadingListedAssets(false);
+      }
+    };
+
     const initializeData = async () => {
       const steamProfileId = await fetchSteamProfileId();
       // console.log("Steam Profile ID:", steamProfileId);
       if (steamProfileId) {
-        await fetchData(steamProfileId);
+        // Fetch both Steam inventory and listed assets in parallel
+        await Promise.all([
+          fetchData(steamProfileId),
+          fetchListedAssets(walletAddress)
+        ]);
       } else {
         setIsLoadingData(false);
       }
@@ -121,9 +155,9 @@ export default function ProfilePage() {
   }, []);
 
   // Add loading and error states
-  if (isLoadingData) {
+  if (isLoadingData || isLoadingListedAssets) {
     return <div className="min-h-screen pt-8 flex items-center justify-center">
-      <div className="text-white">Loading inventory...</div>
+      <div className="text-white">Loading inventory and listings...</div>
     </div>;
   }
 
@@ -134,7 +168,7 @@ export default function ProfilePage() {
   }
 
   // Safe access to assets with null check
-  const userAssets = apiReturns?.assets?.map((asset: any) => ({
+  const allSteamAssets = apiReturns?.assets?.map((asset: any) => ({
     assetId: asset.assetid,
     classId: asset.classid,
     instanceId: asset.instanceid,
@@ -145,47 +179,58 @@ export default function ProfilePage() {
     status: "inventory",
   })) || [];
 
-  // console.log("User Assets:", userAssets);
+  // Filter out assets that are already listed
+  const listedAssetIds = new Set(listedAssets.map(asset => asset.assetid));
+  const userAssets = allSteamAssets.filter(asset => !listedAssetIds.has(asset.assetId));
 
-  const onSaleNFTs = [
-    {
-      assetId: 1,
-      name: "Mystic Fox",
-      collection: "Urban Beasts",
-      price: "3.1 ETH",
-      iconUrl: "/placeholder.svg?height=300&width=300",
-      status: "sale"
-    },
-    {
-      assetId: 2,
-      name: "Silent Peak",
-      collection: "Nature Spirits",
-      price: "1.7 ETH",
-      iconUrl: "/placeholder.svg?height=300&width=300",
-      status: "sale"
-    },
-  ];
+  console.log('ProfilePage - Listed assets:', listedAssets);
+  console.log('ProfilePage - Listed asset IDs:', listedAssetIds);
+  console.log('ProfilePage - All Steam assets:', allSteamAssets);
+  console.log('ProfilePage - Filtered user assets:', userAssets);
 
-  const inAuctionNFTs = [
-    {
-      assetId: 3,
-      name: "Neon Samurai",
-      collection: "Cyber Legends",
-      currentBid: "4.5 ETH",
-      endsIn: "2h 30m",
-      iconUrl: "/placeholder.svg?height=300&width=300",
-      status: "auction"
-    },
-    {
-      assetId: 4,
-      name: "Dream Portal",
-      collection: "Mystic Realms",
-      currentBid: "2.2 ETH",
-      endsIn: "5h 12m",
-      iconUrl: "/placeholder.svg?height=300&width=300",
-      status: "auction"
-    },
-  ];
+  // Helper function to format SUI prices intelligently
+  const formatSuiPrice = (price: string): string => {
+    const num = parseFloat(price || '0');
+    if (num === 0) return "0 SUI";
+    
+    // Remove trailing zeros after decimal point
+    const formatted = num.toFixed(4).replace(/\.?0+$/, '');
+    return `${formatted} SUI`;
+  };
+
+  // Transform listed assets into the format expected by the UI
+  const onSaleNFTs = listedAssets
+    .filter(asset => !asset.listingType || asset.listingType === 'sale')
+    .map(asset => ({
+      assetId: asset.assetid,
+      classId: asset.classid,
+      instanceId: asset.instanceid,
+      iconUrl: asset.icon_url ? `https://steamcommunity-a.akamaihd.net/economy/image/${asset.icon_url}` : "/placeholder.svg",
+      name: asset.name || 'Unknown Item',
+      price: formatSuiPrice(asset.price || '0'), // Price is already stored in SUI format, format intelligently
+      collection: "Listed Item",
+      status: "sale",
+      blobId: asset.blobId,
+      walletAddress: asset.walletAddress,
+      uploadedAt: asset.uploadedAt
+    }));
+
+  const inAuctionNFTs = listedAssets
+    .filter(asset => asset.listingType === 'auction')
+    .map(asset => ({
+      assetId: asset.assetid,
+      classId: asset.classid,
+      instanceId: asset.instanceid,
+      iconUrl: asset.icon_url ? `https://steamcommunity-a.akamaihd.net/economy/image/${asset.icon_url}` : "/placeholder.svg",
+      name: asset.name || 'Unknown Item',
+      currentBid: formatSuiPrice(asset.price || '0'), // Price is already stored in SUI format, format intelligently
+      endsIn: "Ongoing", // Could be calculated from auction duration
+      collection: "Auction Item",
+      status: "auction",
+      blobId: asset.blobId,
+      walletAddress: asset.walletAddress,
+      uploadedAt: asset.uploadedAt
+    }));
 
   return (
     <div className="min-h-screen pt-8">
@@ -318,7 +363,7 @@ function NFTCard({ item, isLoading, handleImageLoad }: { item: any, isLoading: b
             </Link>
             
             {item.status === "inventory" && (
-              <Link to={`/sell/${item.assetId}`} className="w-2/3">
+              <Link to={`/sell/${item.assetId}`} state={{ item }} className="w-2/3">
                 <Button 
                   variant="outline" 
                   size="sm" 

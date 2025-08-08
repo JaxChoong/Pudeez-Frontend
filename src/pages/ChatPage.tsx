@@ -20,7 +20,7 @@ export default function ChatPage() {
       id: 5,
       sender: "ai",
       content:
-        "I can help facilitate this transaction! The current market value for similar pieces is around 3-5 ETH. Would you like me to set up an escrow?",
+  "I can help facilitate this transaction! The current market value for similar pieces is around 3-5 Sui. Would you like me to set up an escrow?",
       time: "10:37 AM",
     },
   ])
