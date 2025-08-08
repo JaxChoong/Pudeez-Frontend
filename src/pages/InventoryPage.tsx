@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link } from "react-router-dom"; 
-import { ExternalLink, Tag, Hammer, Box, Settings, Share, Copy } from "lucide-react";
+import { ExternalLink, Tag, Hammer, Box } from "lucide-react";
 import Shimmer from "@/components/Shimmer";
 import { useImageLoading } from "@/hooks/useImageLoading";
 import { cn } from "@/lib/utils";
@@ -18,7 +18,7 @@ import SteamApps from "@/data/steam_apps.json";
 // List of supported Steam games with their app IDs, loaded from SteamApps.json
 const SUPPORTED_GAMES = (SteamApps as Array<{ name: string; appId: number; contextId?: number }>).map(app => ({
   name: app.name,
-  appId: app.appid,
+  appId: app.appId,
   contextId: app.contextId ?? 2, // default to 2 if not provided
 }));
 
@@ -26,7 +26,6 @@ const SUPPORTED_GAMES = (SteamApps as Array<{ name: string; appId: number; conte
 export default function InventoryPage() {
   // State declarations
   const { isLoading, handleImageLoad } = useImageLoading();
-  const [isFollowing, setIsFollowing] = useState(false);
   const [selectedGame, setSelectedGame] = useState<string>("");
   const [steamProfileId, setSteamProfileId] = useState<string | null>(null);
   const [inventoryError, setInventoryError] = useState<string | null>(null);
@@ -40,7 +39,7 @@ export default function InventoryPage() {
   const [listedAssets, setListedAssets] = useState<Array<any>>([]);
   const [isLoadingListedAssets, setIsLoadingListedAssets] = useState(false);
   const hasFetched = useRef(false);
-  
+  console.log(error);
   useEffect(() => {
     if (hasFetched.current) return;
 
@@ -208,12 +207,6 @@ export default function InventoryPage() {
       uploadedAt: asset.uploadedAt
     }));
 
-  const userStats = [
-    {label: "Items in Inventory", value: userAssets.length.toString()},
-    {label: "Items On Sale", value: onSaleNFTs.length.toString()},
-    {label: "Followers", value: "1.2K"},
-    {label: "Following", value: "456"},
-  ];
 
   // Add loading and error states
   if (isLoadingListedAssets) {

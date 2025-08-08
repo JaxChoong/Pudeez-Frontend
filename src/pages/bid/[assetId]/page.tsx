@@ -1,18 +1,16 @@
 // src/pages/view/[appId]/page.tsx
 "use client";
-import { useParams } from "react-router-dom";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { ExternalLink, ShoppingCart, Gavel, Share } from "lucide-react";
+import {  ShoppingCart, Gavel, Share } from "lucide-react";
 import Shimmer from "@/components/Shimmer";
 import { cn } from "@/lib/utils";
 
 export default function BidItemDetailsPage() {
   const [isImageLoading, setIsImageLoading] = useState(true);
   const [bidAmount, setBidAmount] = useState("");
-  const { assetId } = useParams();
 
   // Mock item
   const item = {

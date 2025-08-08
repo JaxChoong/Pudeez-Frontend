@@ -2,7 +2,7 @@
 "use client";
 
 import * as React from "react";
-import { Check, ChevronDown, Search } from "lucide-react";
+import { Check, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import steamAppsData from "@/data/steam_apps.json";
 const steamApps: SteamApp[] = steamAppsData as SteamApp[];

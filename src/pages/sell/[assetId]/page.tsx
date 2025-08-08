@@ -45,7 +45,7 @@ export default function SellPage() {
   const navigate = useNavigate();
   const currentAccount = useCurrentAccount();
   const { mutate: signTransaction } = useSignTransaction();
-  const { steamUser, selectedGame, setSelectedGame, isLoading: steamLoading } = useSteam();
+  const { steamUser, selectedGame, setSelectedGame } = useSteam();
   
   // Debug logging
   useEffect(() => {
