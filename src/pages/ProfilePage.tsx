@@ -318,7 +318,7 @@ function NFTCard({ item, isLoading, handleImageLoad }: { item: any, isLoading: b
             </Link>
             
             {item.status === "inventory" && (
-              <Link to={`/sell/${item.assetId}`} className="w-2/3">
+              <Link to={`/sell/${item.assetId}`} state={item} className="w-2/3">
                 <Button 
                   variant="outline" 
                   size="sm" 

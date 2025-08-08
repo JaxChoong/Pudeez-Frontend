@@ -1,7 +1,9 @@
 // src/pages/view/[appId]/page.tsx
 "use client";
-import { useParams, useLocation } from "react-router-dom";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 import Shimmer from "@/components/Shimmer";
 import { cn } from "@/lib/utils";
 import { useState, useEffect, useCallback } from "react";
@@ -10,6 +12,7 @@ export default function ItemDetailsPage() {
   const [isImageLoading, setIsImageLoading] = useState(true);
   const { assetId } = useParams();
   const location = useLocation();
+  const navigate = useNavigate();
   const [item, setItem] = useState<any | null>(location.state || null);
   const [loading, setLoading] = useState(!location.state);
   const [error, setError] = useState<string | null>(null);
@@ -44,6 +47,18 @@ export default function ItemDetailsPage() {
   return (
     <div className="min-h-screen py-8">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Back Button */}
+        <div className="mb-6">
+          <Button
+            variant="outline"
+            onClick={() => navigate('/profile')}
+            className="border-white/20 text-white hover:bg-white/10"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Profile
+          </Button>
+        </div>
+        
         <div className="flex flex-col md:flex-row gap-8 items-start">
           {/* Item Image with Shimmer */}
           <div className="w-full md:w-1/3 flex justify-center">

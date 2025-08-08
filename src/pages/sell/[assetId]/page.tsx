@@ -1,7 +1,7 @@
 // src/pages/SellPage/[id]/page.tsx
 "use client";
-import { useState } from "react";
-import { useParams } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -12,49 +12,49 @@ import { cn } from "@/lib/utils";
 
 export default function SellPage() {
   const { assetId } = useParams();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [listingType, setListingType] = useState<'sale' | 'auction'>('sale');
   const [price, setPrice] = useState('');
   const [minBid, setMinBid] = useState('');
   const [auctionDuration, setAuctionDuration] = useState('24');
   const [description, setDescription] = useState('');
   const [isImageLoading, setIsImageLoading] = useState(true);
+  const [item] = useState<any | null>(location.state || null);
+  const [loading] = useState(!location.state);
+  const [error, setError] = useState<string | null>(null);
 
   const handleImageLoad = () => {
     setIsImageLoading(false);
   };
-  // Mock data - replace with actual data fetching
-  const item = {
-      "appid": 381210,
-      "classid": "2339867324",
-      "instanceid": "0",
-      "currency": 0,
-      "background_color": "",
-      "icon_url": "70hL2L8i8T2NFs_wXTt0269q8WN-lB9mO2xF-pTCOadO6XGQirJFHK1523j8eF7ns7n1NjnVj3gOMRTfgpJceqkXBHHaSIyEbJv5SKpE4eF0fqddYxPZA9-SjOKUn3IpCV4iqw",
-      "icon_url_large": "70hL2L8i8T2NFs_wXTt0269q8WN-lB9mO2xF-pTCOadO6XGQirJFHK1523j8eF7ns7n1NjnVj3gOMRTfgpJceqkXBHHaSIyEbJv5SKpE4eF0fqddYxPZA9-SjOKUn3IpCV4iqw",
-      "tradable": 0,
-      "name": "Anniversary Head Dwight 0401",
-      "type": "",
-      "market_name": "Anniversary Head Dwight 0401",
-      "market_hash_name": "Anniversary Head Dwight 0401",
-      "commodity": 1,
-      "marketable": 0,
-      "sealed": 0,
-      // stuff for pudeez to get later
-        "description": "A special anniversary head for Dwight, celebrating 0401.",
-        "price": "0.01 SUI",
-        "currentBid": "",
-        status: "sale", // or "auction"
-        "endsIn": "",
-  };
-  const owner = {
-    "name": "Pudeez User",
-    "avatar": "https://example.com/avatar.png"
-    };
+
+  // If item is not passed via state, we could implement fetching logic here
+  // For now, we'll use the passed state or show an error
+  useEffect(() => {
+    if (!item && !loading) {
+      setError("Asset information not found. Please navigate from your inventory.");
+    }
+  }, [item, loading]);
+
+  // Get the correct icon URL
+  const iconUrl = item && item.iconUrl ? item.iconUrl : 
+                  item && item.icon_url_large ? `https://steamcommunity-a.akamaihd.net/economy/image/${item.icon_url_large}` : 
+                  item && item.icon_url ? `https://steamcommunity-a.akamaihd.net/economy/image/${item.icon_url}` : undefined;
+
+  // Show loading state
+  if (loading) {
+    return <div className="text-center text-white py-10">Loading...</div>;
+  }
+
+  // Show error state
+  if (error || !item) {
+    return <div className="text-center text-red-400 py-10">{error || "Asset not found"}</div>;
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log({
-      nftId: assetId,
+      assetId: assetId,
       listingType,
       price: listingType === 'sale' ? price : null,
       minBid: listingType === 'auction' ? minBid : null,
@@ -66,21 +66,21 @@ export default function SellPage() {
   return (
     <div className="min-h-screen py-8">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className="text-3xl font-bold text-white mb-8">List Your item</h1>
+        <h1 className="text-3xl font-bold text-white mb-8">List Your Item</h1>
         
         <div className="grid md:grid-cols-2 gap-8">
-          {/* NFT Preview */}
-<Card className="bg-white/5 border-white/10">
+          {/* Asset Preview */}
+          <Card className="bg-white/5 border-white/10">
             <CardContent className="p-0">
-              <div className="relative overflow-hidden rounded-t-lg aspect-square">
+              <div className="relative overflow-hidden rounded-t-lg aspect-square flex items-center justify-center bg-black/20">
                 {isImageLoading && (
                   <Shimmer className="absolute inset-0 w-full h-full" />
                 )}
                 <img
-                  src={`https://steamcommunity-a.akamaihd.net/economy/image/${item.icon_url_large}`}
+                  src={iconUrl}
                   alt={item.name}
                   className={cn(
-                    "w-full h-full object-cover",
+                    "max-w-[80%] max-h-[80%] object-contain transition-transform duration-300",
                     isImageLoading ? "opacity-0" : "opacity-100"
                   )}
                   onLoad={handleImageLoad}
@@ -89,7 +89,7 @@ export default function SellPage() {
               </div>
               <div className="p-4">
                 <h2 className="text-xl font-bold text-white">{item.name}</h2>
-                <p className="text-gray-400">{item.type}</p>
+                <p className="text-gray-400">{item.type || "Steam Item"}</p>
               </div>
             </CardContent>
           </Card>
@@ -184,7 +184,12 @@ export default function SellPage() {
                 </div>
 
                 <div className="flex justify-end gap-4">
-                  <Button variant="outline" type="button" className="border-white/20 text-white hover:bg-white/10">
+                  <Button 
+                    variant="outline" 
+                    type="button" 
+                    className="border-white/20 text-white hover:bg-white/10"
+                    onClick={() => navigate('/profile')}
+                  >
                     Cancel
                   </Button>
                   <Button type="submit" className="bg-purple-600 hover:bg-purple-700">
