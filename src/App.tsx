@@ -1,4 +1,4 @@
-import { BrowserRouter as  Routes, Route } from "react-router-dom"
+import { Routes, Route } from "react-router-dom"
 import { useCurrentAccount } from "@mysten/dapp-kit"
 import { SteamAuthHandler } from "./SteamAuthHandler"
 import { SteamProvider } from "./contexts/SteamContext"
