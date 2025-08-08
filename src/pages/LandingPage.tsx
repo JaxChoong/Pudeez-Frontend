@@ -121,7 +121,7 @@ export default function LandingPage() {
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </Button>
               </Link>
-              <Link to="/profile">
+              <Link to="/inventory">
                 <Button
                   size="lg"
                   className="w-full sm:w-auto neon-button-purple px-8 py-4 text-lg font-semibold rounded-none font-mono uppercase tracking-wider transform hover:scale-105"
