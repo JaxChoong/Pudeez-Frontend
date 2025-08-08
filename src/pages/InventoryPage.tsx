@@ -22,7 +22,6 @@ const SUPPORTED_GAMES = (SteamApps as Array<{ name: string; appId: number; conte
   contextId: app.contextId ?? 2, // default to 2 if not provided
 }));
 
-console.log("Supported Games:", SUPPORTED_GAMES);
 
 export default function InventoryPage() {
   // State declarations
