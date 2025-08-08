@@ -189,12 +189,6 @@ export default function MarketplacePage() {
                   )}
                   <Button
                     variant="outline"
-                    className="neon-button-purple bg-transparent w-10 h-10 p-0 flex items-center justify-center"
-                  >
-                    <ShoppingCart className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
                     className="neon-button-cyan bg-transparent w-10 h-10 p-0 flex items-center justify-center"
                   >
                     <Bot className="w-4 h-4" />
