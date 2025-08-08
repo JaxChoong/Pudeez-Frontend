@@ -122,8 +122,6 @@ export default function Navbar() {
 
   const navItems = [
     { path: "/marketplace", label: "NEXUS", icon: Search },
-    { path: "/chat", label: "COMM", icon: MessageCircle },
-    { path: "/history", label: "LOG", icon: History },
     { path: "/profile", label: "USER", icon: User },
     {path: "/inventory", label: "INVENTORY", icon: Gamepad2 },
   ]

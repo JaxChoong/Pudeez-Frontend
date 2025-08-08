@@ -5,8 +5,6 @@ import Navbar from "./components/Navbar"
 import LandingPage from "./pages/LandingPage"
 import MarketplacePage from "./pages/MarketplacePage"
 import ProfilePage from "./pages/ProfilePage"
-import ChatPage from "./pages/ChatPage"
-import HistoryPage from "./pages/HistoryPage"
 import CartPage from "./pages/CartPage"
 import SellPage from "./pages/sell/[assetId]/page"
 import ItemDetailsPage from "./pages/view/[assetId]/page"
@@ -36,8 +34,6 @@ function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/marketplace" element={<MarketplacePage />} />
         <Route path="/profile" element={<ProfilePage />} />
-        <Route path="/chat" element={<ChatPage />} />
-        <Route path="/history" element={<HistoryPage />} />
         <Route path="/cart" element={<CartPage />} />
         <Route path="/sell/:assetId" element={<SellPage />} />
         <Route path="/view/:assetId" element={<ItemDetailsPage />} />
