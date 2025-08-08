@@ -350,49 +350,7 @@ export default function SellPage() {
           <Card className="bg-white/5 border-white/10">
             <CardContent className="p-6">
               <form onSubmit={handleSubmit}>
-                {/* Game Selection Dropdown */}
-                <div className="mb-4 relative">
-                  <p className="text-sm text-white mb-2">Select Game</p>
-                  <Input
-                    type="text"
-                    placeholder="Search for a game..."
-                    value={selectedGame ? selectedGame.name : searchTerm}
-                    onChange={(e) => {
-                      setSearchTerm(e.target.value);
-                      setShowDropdown(true);
-                      if (selectedGame && e.target.value !== selectedGame.name) {
-                        setSelectedGame(null);
-                      }
-                    }}
-                    onFocus={() => setShowDropdown(true)}
-                    onBlur={() => setTimeout(() => setShowDropdown(false), 200)} // Small delay to allow click
-                    className="bg-white/5 border-white/10 text-white"
-                    required
-                  />
-                  {showDropdown && filteredGames.length > 0 && (
-                    <div 
-                      className="absolute z-10 mt-1 w-full max-h-60 overflow-auto rounded-md bg-gray-800 border border-white/10 shadow-lg"
-                      onMouseDown={(e) => e.preventDefault()} // Prevent blur when clicking inside
-                    >
-                      {filteredGames.map((game) => (
-                        <div
-                          key={game.appid}
-                          className="px-4 py-2 text-white hover:bg-white/10 cursor-pointer"
-                          onMouseDown={(e) => {
-                            e.preventDefault(); // Prevent input blur
-                            setSelectedGame({appid: game.appid.toString(), name: game.name});
-                            setSteamId(game.appid.toString());
-                            setSearchTerm('');
-                            setShowDropdown(false);
-                          }}
-                        >
-                          {game.name}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
+            
                 {/* Steam ID Input (hidden but included in form submission) */}
                 <input type="hidden" name="appid" value={steamId} />
                 <Tabs defaultValue="sale" onValueChange={(value) => setListingType(value as 'sale' | 'auction')}>
