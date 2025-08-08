@@ -288,8 +288,8 @@ export default function SellPage() {
               
               alert('Asset listed successfully!');
               
-              // Navigate back to profile
-              navigate('/profile');
+              // Navigate back to inventory
+              navigate('/inventory');
               
             } catch (dbError) {
               console.error('Database storage error:', dbError);
@@ -451,7 +451,7 @@ export default function SellPage() {
                     variant="outline" 
                     type="button" 
                     className="border-white/20 text-white hover:bg-white/10"
-                    onClick={() => navigate('/profile')}
+                    onClick={() => navigate('/inventory')}
                   >
                     Cancel
                   </Button>
