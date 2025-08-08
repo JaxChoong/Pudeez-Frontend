@@ -20,7 +20,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     <Router>
       <Theme appearance="dark">
         <QueryClientProvider client={queryClient}>
-          <SuiClientProvider networks={networkConfig} defaultNetwork="devnet">
+          <SuiClientProvider networks={networkConfig} defaultNetwork="testnet">
             <RegisterEnokiWallets />
             <WalletProvider>
               <App />
