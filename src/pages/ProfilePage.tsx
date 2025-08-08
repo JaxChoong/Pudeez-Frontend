@@ -1,4 +1,4 @@
-// app/profile/page.tsx
+// src/pages/ProfilePage/page.tsx
 "use client";
 
 import { useEffect, useState, useRef } from "react";
@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link } from "react-router-dom"; 
-import { ExternalLink, Tag, Hammer, Box } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ExternalLink, Tag, Hammer, Box, Settings, Share, Copy } from "lucide-react";
 import Shimmer from "@/components/Shimmer";
 import { useImageLoading } from "@/hooks/useImageLoading";
 import { cn } from "@/lib/utils";
@@ -15,10 +16,12 @@ import { getCookie } from "@/lib/utils";
 
 export default function ProfilePage() {
   // State declarations
+  const { isLoading: isCoverLoading, handleImageLoad: handleCoverLoad } = useImageLoading();
+  const { isLoading: isAvatarLoading, handleImageLoad: handleAvatarLoad } = useImageLoading();
   const { isLoading, handleImageLoad } = useImageLoading();
+  const [isFollowing, setIsFollowing] = useState(false);
   interface ApiReturns {
     assets?: Array<any>;
-    // add other properties if needed
   }
   const [apiReturns, setApiReturns] = useState<ApiReturns | null>(null);
   const [isLoadingData, setIsLoadingData] = useState(true);
@@ -48,7 +51,6 @@ export default function ProfilePage() {
     const walletAddress = addr.trim();
     console.log('ProfilePage - Using wallet address:', walletAddress);
 
-    // Only proceed if walletAddress is present and valid
     const fetchSteamProfileId = async () => {
       try {
         console.log('Sending request to get Steam ID with wallet address:', walletAddress);
@@ -65,8 +67,6 @@ export default function ProfilePage() {
         }
         
         const data = await response.json();
-        // console.log('Full backend response:', data);
-        // console.log('Fetched Steam ID from backend:', data.steamID);
         return data.steamID;
       } catch (err) {
         console.error('Error fetching Steam profile ID:', err);
@@ -99,7 +99,6 @@ export default function ProfilePage() {
         }
         
         const data = await response.json();
-        // console.log('Steam inventory response:', data);
         setApiReturns(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : String(err));
@@ -130,7 +129,6 @@ export default function ProfilePage() {
         setListedAssets(data.assets || []);
       } catch (err) {
         console.error('Error fetching listed assets:', err);
-        // Don't set error state for listed assets since it's not critical
         setListedAssets([]);
       } finally {
         setIsLoadingListedAssets(false);
@@ -139,9 +137,7 @@ export default function ProfilePage() {
 
     const initializeData = async () => {
       const steamProfileId = await fetchSteamProfileId();
-      // console.log("Steam Profile ID:", steamProfileId);
       if (steamProfileId) {
-        // Fetch both Steam inventory and listed assets in parallel
         await Promise.all([
           fetchData(steamProfileId),
           fetchListedAssets(walletAddress)
@@ -183,17 +179,10 @@ export default function ProfilePage() {
   const listedAssetIds = new Set(listedAssets.map(asset => asset.assetid));
   const userAssets = allSteamAssets.filter(asset => !listedAssetIds.has(asset.assetId));
 
-  console.log('ProfilePage - Listed assets:', listedAssets);
-  console.log('ProfilePage - Listed asset IDs:', listedAssetIds);
-  console.log('ProfilePage - All Steam assets:', allSteamAssets);
-  console.log('ProfilePage - Filtered user assets:', userAssets);
-
   // Helper function to format SUI prices intelligently
   const formatSuiPrice = (price: string): string => {
     const num = parseFloat(price || '0');
     if (num === 0) return "0 SUI";
-    
-    // Remove trailing zeros after decimal point
     const formatted = num.toFixed(4).replace(/\.?0+$/, '');
     return `${formatted} SUI`;
   };
@@ -207,7 +196,7 @@ export default function ProfilePage() {
       instanceId: asset.instanceid,
       iconUrl: asset.icon_url ? `https://steamcommunity-a.akamaihd.net/economy/image/${asset.icon_url}` : "/placeholder.svg",
       name: asset.name || 'Unknown Item',
-      price: formatSuiPrice(asset.price || '0'), // Price is already stored in SUI format, format intelligently
+      price: formatSuiPrice(asset.price || '0'),
       collection: "Listed Item",
       status: "sale",
       blobId: asset.blobId,
@@ -223,8 +212,8 @@ export default function ProfilePage() {
       instanceId: asset.instanceid,
       iconUrl: asset.icon_url ? `https://steamcommunity-a.akamaihd.net/economy/image/${asset.icon_url}` : "/placeholder.svg",
       name: asset.name || 'Unknown Item',
-      currentBid: formatSuiPrice(asset.price || '0'), // Price is already stored in SUI format, format intelligently
-      endsIn: "Ongoing", // Could be calculated from auction duration
+      currentBid: formatSuiPrice(asset.price || '0'),
+      endsIn: "Ongoing",
       collection: "Auction Item",
       status: "auction",
       blobId: asset.blobId,
@@ -232,10 +221,87 @@ export default function ProfilePage() {
       uploadedAt: asset.uploadedAt
     }));
 
+  const userStats = [
+    {label: "Items in Inventory", value: userAssets.length.toString()},
+    {label: "Items On Sale", value: onSaleNFTs.length.toString()},
+    {label: "Followers", value: "1.2K"},
+    {label: "Following", value: "456"},
+  ];
+
   return (
     <div className="min-h-screen pt-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Profile Header and Stats would go here */}
+        {/* Profile Header */}
+        <div className="mb-12">
+          <div className="relative">
+            <div className="h-48 md:h-64 bg-gradient-to-r from-purple-600/20 to-pink-600/20 rounded-xl overflow-hidden">
+              {isCoverLoading && <Shimmer className="w-full h-full" />}
+              <img
+                src="/placeholder.svg?height=256&width=1024"
+                alt="Profile Cover"
+                className={cn(
+                  "w-full h-full object-cover",
+                  isCoverLoading ? "opacity-0" : "opacity-100"
+                )}
+                onLoad={handleCoverLoad}
+              />
+            </div>
+
+            <div className="relative -mt-16 px-6">
+              <div className="flex flex-col md:flex-row items-start md:items-end gap-6">
+                <Avatar className="w-32 h-32 border-4 border-white/20 bg-gradient-to-r from-purple-500 to-pink-500">
+                  {isAvatarLoading && <Shimmer className="w-full h-full rounded-full" />}
+                  <AvatarImage 
+                    src="/placeholder.svg?height=128&width=128" 
+                    className={cn(isAvatarLoading ? "opacity-0" : "opacity-100")}
+                    onLoad={handleAvatarLoad}
+                  />
+                </Avatar>
+
+                <div className="flex-1">
+                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                    <div>
+                      <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">Steam Collector</h1>
+                      <p className="text-gray-300 mb-2">@steam_collector</p>
+                      <p className="text-gray-400 max-w-2xl">
+                        Collecting and trading Steam items on the blockchain.
+                      </p>
+                    </div>
+                    <div className="flex gap-3 border-white mt-10">
+                      <Button variant="outline" size="sm" className="border-white/20 text-white hover:bg-white/10 bg-transparent">
+                        <Share className="w-4 h-4 mr-2" /> Share
+                      </Button>
+                      <Button variant="outline" size="sm" className="border-white/20 text-white hover:bg-white/10 bg-transparent">
+                        <Copy className="w-4 h-4 mr-2" /> Copy Link
+                      </Button>
+                      <Button
+                        onClick={() => setIsFollowing(!isFollowing)}
+                        className={isFollowing ? "bg-gray-600 hover:bg-gray-700" : "bg-purple-600 hover:bg-purple-700"}
+                      >
+                        {isFollowing ? "Following" : "Follow"}
+                      </Button>
+                      <Button variant="outline" size="sm" className="border-white/20 text-white hover:bg-white/10 bg-transparent">
+                        <Settings className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Stats */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-8">
+            {userStats.map((stat, index) => (
+              <Card key={index} className="bg-white/5 border-white/10 backdrop-blur-sm">
+                <CardContent className="p-6 text-center">
+                  <div className="text-2xl md:text-3xl font-bold text-white mb-1">{stat.value}</div>
+                  <div className="text-gray-400 text-sm">{stat.label}</div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
 
         {/* Tabs for NFTs */}
         <Tabs defaultValue="all" className="mb-8">
@@ -318,7 +384,7 @@ function NFTCard({ item, isLoading, handleImageLoad }: { item: any, isLoading: b
           )}
         </div>
         
- {/* Content Section with fixed bottom alignment */}
+        {/* Content Section with fixed bottom alignment */}
         <div className="p-4 flex flex-col" style={{ minHeight: '160px' }}>
           {/* Text Content */}
           <div className="flex-grow">
