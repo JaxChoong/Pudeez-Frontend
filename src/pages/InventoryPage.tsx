@@ -56,7 +56,8 @@ export default function InventoryPage() {
 
     const fetchSteamProfileId = async () => {
       try {
-        const response = await fetch(`http://localhost:3111/api/user/get_steamid`,{
+        const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3111';
+        const response = await fetch(`${backendUrl}/api/user/get_steamid`,{
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -81,7 +82,8 @@ export default function InventoryPage() {
     const fetchListedAssets = async (walletAddress: string) => {
       try {
         setIsLoadingListedAssets(true);
-        const response = await fetch(`http://localhost:3111/api/walrus/assets/${walletAddress}`);
+        const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3111';
+        const response = await fetch(`${backendUrl}/api/walrus/assets/${walletAddress}`);
         
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -119,8 +121,9 @@ export default function InventoryPage() {
         throw new Error("Selected game not found");
       }
 
+      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3111';
       const response = await fetch(
-        `http://localhost:3111/api/steam/inventory/${steamProfileId}?appid=${game.appId}&contextid=${game.contextId}`
+        `${backendUrl}/api/steam/inventory/${steamProfileId}?appid=${game.appId}&contextid=${game.contextId}`
       );
       
       if (!response.ok) {

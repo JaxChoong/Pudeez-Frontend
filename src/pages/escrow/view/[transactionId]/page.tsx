@@ -14,7 +14,6 @@ import {
   ArrowLeft,
   ExternalLink,
   Copy,
-  Calendar,
   DollarSign,
   FileText,
   Link as LinkIcon,
@@ -30,23 +29,14 @@ interface EscrowTransactionDetail {
     image: string;
     game: string;
     assetId: string;
-    description?: string;
-    rarity?: string;
-    condition?: string;
   };
   amount: string;
-  status: "in-progress" | "cancelled" | "finished";
+  status: string; // Can be: initialized, deposited, completed, cancelled
   createdAt: string;
   updatedAt: string;
   steamTradeUrl?: string;
   description?: string;
-  escrowAddress?: string;
-  blockchainTxHash?: string;
-  timeline?: Array<{
-    timestamp: string;
-    event: string;
-    description: string;
-  }>;
+  role: 'buyer' | 'seller';
 }
 
 export default function EscrowViewPage() {
@@ -56,67 +46,37 @@ export default function EscrowViewPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Mock data for demonstration - replace with actual API calls
-  const mockTransactionDetail: EscrowTransactionDetail = {
-    transactionId: transactionId || "esc_001",
-    buyer: "0xabc123def456789012345678901234567890abcd",
-    seller: "0x789012345678901234567890abcdef123456789",
-    item: {
-      name: "AK-47 | Redline (Field-Tested)",
-      image: "https://steamcommunity-a.akamaihd.net/economy/image/fWFc82js0fmoRAP-qOIPu5THSWqfSmTELLqcUywGkijVjZULUrsm1j-9xgEObwgfEh_nvjlWhNzZCveCDfIBj98xqodQ2CZknz56P7fiDz9-TQXJVfdhX_Qp4g3gNiM6vYBkXNak8L5IKwS4s9OaYLElNoxEGpDVWKDQZVz870s7gvQL-2K9mAfhuw",
-      game: "Counter-Strike: Global Offensive",
-      assetId: "12345678901",
-      description: "The AK-47 delivers more damage than the M4A1-S and M4A4, but with higher recoil and less accuracy.",
-      rarity: "Classified",
-      condition: "Field-Tested"
-    },
-    amount: "2.5 SUI",
-    status: "in-progress",
-    createdAt: "2025-08-09T10:30:00Z",
-    updatedAt: "2025-08-09T10:30:00Z",
-    steamTradeUrl: "https://steamcommunity.com/tradeoffer/new/?partner=123456&token=abcdef",
-    description: "Purchasing AK-47 Redline skin through secure escrow",
-    escrowAddress: "0xescrow123456789012345678901234567890abcd",
-    blockchainTxHash: "0x1234567890abcdef1234567890abcdef12345678",
-    timeline: [
-      {
-        timestamp: "2025-08-09T10:30:00Z",
-        event: "Escrow Created",
-        description: "Buyer initiated escrow transaction"
-      },
-      {
-        timestamp: "2025-08-09T10:32:00Z",
-        event: "Funds Deposited",
-        description: "2.5 SUI deposited to escrow contract"
-      },
-      {
-        timestamp: "2025-08-09T10:35:00Z",
-        event: "Seller Notified",
-        description: "Steam trade URL provided to seller"
-      }
-    ]
-  };
-
   useEffect(() => {
     const fetchTransactionDetail = async () => {
       setIsLoading(true);
       setError(null);
       
       try {
-        // Replace with actual API call
-        // const response = await fetch(`/api/escrow/transaction/${transactionId}`);
-        // if (!response.ok) throw new Error("Transaction not found");
-        // const data = await response.json();
-        
-        // Using mock data for now
-        setTimeout(() => {
-          if (transactionId) {
-            setTransaction(mockTransactionDetail);
-          } else {
-            setError("Transaction ID not provided");
-          }
+        if (!transactionId) {
+          setError("Transaction ID not provided");
           setIsLoading(false);
-        }, 1000);
+          return;
+        }
+
+        const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3111';
+        const response = await fetch(`${backendUrl}/api/escrow/transaction/${transactionId}`);
+        
+        if (!response.ok) {
+          if (response.status === 404) {
+            throw new Error("Transaction not found");
+          }
+          throw new Error(`Failed to fetch transaction: ${response.status} ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          setTransaction(data.escrow);
+        } else {
+          throw new Error(data.error || 'Failed to fetch transaction details');
+        }
+        
+        setIsLoading(false);
       } catch (err: any) {
         setError(err.message || "Failed to load transaction details");
         setIsLoading(false);
@@ -126,16 +86,23 @@ export default function EscrowViewPage() {
     fetchTransactionDetail();
   }, [transactionId]);
 
-  const getStatusBadge = (status: EscrowTransactionDetail["status"]) => {
+  const getStatusBadge = (status: string) => {
     switch (status) {
-      case "in-progress":
+      case "initialized":
+        return (
+          <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30">
+            <Clock className="w-4 h-4 mr-2" />
+            Initialized
+          </Badge>
+        );
+      case "deposited":
         return (
           <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30">
             <Clock className="w-4 h-4 mr-2" />
-            In Progress
+            Deposited
           </Badge>
         );
-      case "finished":
+      case "completed":
         return (
           <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
             <CheckCircle className="w-4 h-4 mr-2" />
@@ -150,7 +117,12 @@ export default function EscrowViewPage() {
           </Badge>
         );
       default:
-        return null;
+        return (
+          <Badge className="bg-gray-500/20 text-gray-400 border-gray-500/30">
+            <Clock className="w-4 h-4 mr-2" />
+            Unknown
+          </Badge>
+        );
     }
   };
 
@@ -255,24 +227,8 @@ export default function EscrowViewPage() {
                     {transaction.item.name}
                   </h4>
                   <p className="text-gray-400 text-sm mb-2">{transaction.item.game}</p>
-                  {transaction.item.rarity && (
-                    <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30 mb-1">
-                      {transaction.item.rarity}
-                    </Badge>
-                  )}
-                  {transaction.item.condition && (
-                    <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30 ml-2">
-                      {transaction.item.condition}
-                    </Badge>
-                  )}
                 </div>
               </div>
-
-              {transaction.item.description && (
-                <div className="bg-black/20 rounded-lg p-4">
-                  <p className="text-gray-300 text-sm">{transaction.item.description}</p>
-                </div>
-              )}
             </CardContent>
           </Card>
 
@@ -320,23 +276,6 @@ export default function EscrowViewPage() {
                   </div>
                 </div>
 
-                {transaction.escrowAddress && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-400">Escrow Contract:</span>
-                    <div className="flex items-center gap-2">
-                      <span className="text-white font-mono">{truncateAddress(transaction.escrowAddress)}</span>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => copyToClipboard(transaction.escrowAddress!)}
-                        className="p-1 h-6 w-6"
-                      >
-                        <Copy className="w-3 h-3" />
-                      </Button>
-                    </div>
-                  </div>
-                )}
-
                 <div className="flex justify-between items-center">
                   <span className="text-gray-400">Created:</span>
                   <span className="text-white">{formatDate(transaction.createdAt)}</span>
@@ -371,35 +310,6 @@ export default function EscrowViewPage() {
           </Card>
         </div>
 
-        {/* Timeline */}
-        {transaction.timeline && transaction.timeline.length > 0 && (
-          <Card className="bg-white/5 border-white/10 backdrop-blur-sm mt-8">
-            <CardContent className="p-6">
-              <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-cyan-400" />
-                Transaction Timeline
-              </h3>
-              
-              <div className="space-y-4">
-                {transaction.timeline.map((event, index) => (
-                  <div key={index} className="flex gap-4">
-                    <div className="w-3 h-3 bg-purple-500 rounded-full mt-2 flex-shrink-0"></div>
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between mb-1">
-                        <h4 className="font-semibold text-white">{event.event}</h4>
-                        <span className="text-gray-400 text-sm">
-                          {formatDate(event.timestamp)}
-                        </span>
-                      </div>
-                      <p className="text-gray-300 text-sm">{event.description}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
         {/* Description */}
         {transaction.description && (
           <Card className="bg-white/5 border-white/10 backdrop-blur-sm mt-8">
@@ -411,18 +321,16 @@ export default function EscrowViewPage() {
         )}
 
         {/* Blockchain Link */}
-        {transaction.blockchainTxHash && (
-          <div className="mt-8 text-center">
-            <Button
-              variant="outline"
-              onClick={() => window.open(`https://suiexplorer.com/txblock/${transaction.blockchainTxHash}`, '_blank')}
-              className="border-white/20 text-white hover:bg-white/10"
-            >
-              <ExternalLink className="w-4 h-4 mr-2" />
-              View on Sui Explorer
-            </Button>
-          </div>
-        )}
+        <div className="mt-8 text-center">
+          <Button
+            variant="outline"
+            onClick={() => window.open(`https://suiscan.xyz/testnet/object/${transaction.transactionId}`, '_blank')}
+            className="border-white/20 text-white hover:bg-white/10"
+          >
+            <ExternalLink className="w-4 h-4 mr-2" />
+            View on Sui Explorer
+          </Button>
+        </div>
       </div>
     </div>
   );

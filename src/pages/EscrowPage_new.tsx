@@ -14,13 +14,10 @@ import {
   XCircle, 
   AlertTriangle,
   Eye,
-  RefreshCw,
-  DollarSign,
-  Loader2
+  RefreshCw
 } from "lucide-react";
 import { useCurrentAccount } from "@mysten/dapp-kit";
 import { cn } from "@/lib/utils";
-import { useClaimTransaction } from "@/hooks/useClaimTransaction";
 
 // Updated interface to match backend format
 interface EscrowTransaction {
@@ -47,59 +44,35 @@ export default function EscrowPage() {
   const [escrowTransactions, setEscrowTransactions] = useState<EscrowTransaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("in-progress");
-  const { claimPayment, verifyTransfer, loading: claimLoading, verifying, error: claimError } = useClaimTransaction();
-
-  // Handle claim payment
-  const handleClaim = async (transaction: EscrowTransaction) => {
-    try {
-      const result = await claimPayment({
-        escrowId: transaction.transactionId,
-        escrowObjectId: transaction.transactionId, // This should be the actual Sui object ID
-      });
-      
-      console.log('Claim successful:', result);
-      // Refresh transactions after successful claim
-      fetchEscrowTransactions();
-    } catch (error) {
-      console.error('Claim failed:', error);
-    }
-  };
-
-  // Determine if current user is seller for a transaction
-  const isCurrentUserSeller = (transaction: EscrowTransaction): boolean => {
-    return currentAccount?.address === transaction.seller;
-  };
-
-  // Fetch escrow transactions from backend
-  const fetchEscrowTransactions = async () => {
-    if (!currentAccount?.address) return;
-    
-    setIsLoading(true);
-    try {
-      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3111';
-      const response = await fetch(`${backendUrl}/api/escrow/getAllEscrows?address=${currentAccount.address}`);
-      
-      if (!response.ok) {
-        throw new Error(`Failed to fetch escrows: ${response.status} ${response.statusText}`);
-      }
-      
-      const data = await response.json();
-      
-      if (data.success) {
-        setEscrowTransactions(data.escrows);
-      } else {
-        throw new Error(data.error || 'Failed to fetch escrow transactions');
-      }
-      
-      setIsLoading(false);
-    } catch (error) {
-      console.error("Error fetching escrow transactions:", error);
-      setEscrowTransactions([]); // Set empty array on error
-      setIsLoading(false);
-    }
-  };
 
   useEffect(() => {
+    // Fetch escrow transactions from API
+    const fetchEscrowTransactions = async () => {
+      setIsLoading(true);
+      try {
+        const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3111';
+        const response = await fetch(`${backendUrl}/api/escrow/getAllEscrows?address=${currentAccount?.address}`);
+        
+        if (!response.ok) {
+          throw new Error(`Failed to fetch escrows: ${response.status} ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          setEscrowTransactions(data.escrows);
+        } else {
+          throw new Error(data.error || 'Failed to fetch escrow transactions');
+        }
+        
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Error fetching escrow transactions:", error);
+        setEscrowTransactions([]); // Set empty array on error
+        setIsLoading(false);
+      }
+    };
+
     if (currentAccount?.address) {
       fetchEscrowTransactions();
     } else {
@@ -113,21 +86,21 @@ export default function EscrowPage() {
       case "in-progress":
         return (
           <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30">
-            <Clock className="w-3 h-3 mr-1" />
+            <Clock className="w-4 h-4 mr-2" />
             In Progress
           </Badge>
         );
       case "finished":
         return (
           <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
-            <CheckCircle className="w-3 h-3 mr-1" />
+            <CheckCircle className="w-4 h-4 mr-2" />
             Completed
           </Badge>
         );
       case "cancelled":
         return (
           <Badge className="bg-red-500/20 text-red-400 border-red-500/30">
-            <XCircle className="w-3 h-3 mr-1" />
+            <XCircle className="w-4 h-4 mr-2" />
             Cancelled
           </Badge>
         );
@@ -136,14 +109,8 @@ export default function EscrowPage() {
     }
   };
 
-  const getFilteredTransactions = (status: string) => {
-    if (status === "all") return escrowTransactions;
-    return escrowTransactions.filter(tx => tx.status === status);
-  };
-
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
       month: "short",
       day: "numeric",
       hour: "2-digit",
@@ -153,6 +120,10 @@ export default function EscrowPage() {
 
   const truncateAddress = (address: string) => {
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
+  };
+
+  const getFilteredTransactions = (status: string) => {
+    return escrowTransactions.filter(transaction => transaction.status === status);
   };
 
   if (isLoading) {
@@ -302,6 +273,16 @@ export default function EscrowPage() {
                                   {transaction.item.name}
                                 </h3>
                                 <p className="text-gray-400 text-sm">{transaction.item.game}</p>
+                                {transaction.role && (
+                                  <Badge className={cn(
+                                    "mt-1",
+                                    transaction.role === "buyer" 
+                                      ? "bg-blue-500/20 text-blue-400 border-blue-500/30"
+                                      : "bg-orange-500/20 text-orange-400 border-orange-500/30"
+                                  )}>
+                                    {transaction.role === "buyer" ? "Buying" : "Selling"}
+                                  </Badge>
+                                )}
                               </div>
                               {getStatusBadge(transaction.status)}
                             </div>
@@ -340,38 +321,6 @@ export default function EscrowPage() {
                                 View Details
                               </Button>
                             </Link>
-                            
-                            {/* Claim Button for Sellers in In-Progress Transactions */}
-                            {status === "in-progress" && isCurrentUserSeller(transaction) && (
-                              <Button 
-                                onClick={() => handleClaim(transaction)}
-                                disabled={claimLoading || verifying}
-                                size="sm" 
-                                className="bg-green-600 hover:bg-green-700 text-white w-full"
-                              >
-                                {claimLoading ? (
-                                  <>
-                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                    Claiming...
-                                  </>
-                                ) : verifying ? (
-                                  <>
-                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                    Verifying...
-                                  </>
-                                ) : (
-                                  <>
-                                    <DollarSign className="w-4 h-4 mr-2" />
-                                    Claim Payment
-                                  </>
-                                )}
-                              </Button>
-                            )}
-                            
-                            {/* Show error if claim failed */}
-                            {claimError && status === "in-progress" && isCurrentUserSeller(transaction) && (
-                              <p className="text-red-400 text-xs mt-1">{claimError}</p>
-                            )}
                           </div>
                         </div>
                       </CardContent>

@@ -89,6 +89,7 @@ export function useEscrowTransaction() {
     tradeUrl: string;
     priceInSui: number;
     appId: string;
+    iconUrl?: string;
     contextId?: string;
     classId?: string;
     instanceId?: string;
@@ -167,6 +168,8 @@ export function useEscrowTransaction() {
           transaction.pure.vector('u8', Array.from(new TextEncoder().encode(params.assetId))), // asset_id
           transaction.pure.vector('u8', Array.from(new TextEncoder().encode(params.assetName))), // asset_name
           transaction.pure.u64(params.assetAmount), // asset_amount
+          transaction.pure.vector('u8', Array.from(new TextEncoder().encode(params.appId))), // app_id
+          transaction.pure.vector('u8', Array.from(new TextEncoder().encode(params.iconUrl || ''))), // icon_url
           transaction.pure.vector('u8', Array.from(new TextEncoder().encode(params.tradeUrl))), // trade_url
           transaction.pure.u8(initialSellerItemCount), // initial_seller_item_count
           transaction.pure.u8(initialBuyerItemCount), // initial_buyer_item_count

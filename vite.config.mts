@@ -13,4 +13,13 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ["chunk-JCD3NDNE"],
   },
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3111',
+        changeOrigin: true,
+        secure: false,
+      },
+    },
+  },
 })
