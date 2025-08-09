@@ -254,10 +254,12 @@ export default function MarketplacePage() {
                     BID
                   </Button>
                 ) : (
-                  <Button className="neon-button-cyan font-mono uppercase text-xs h-8 px-4">
+                  <Link className="neon-button-cyan font-mono uppercase text-xs h-8 flex justify-center items-center px-4 bg-white text-black rounded-md hover:bg-cyan-100 transition-all duration-300"
+                        to={`/buy/${item.assetid}`}
+                        state={{item}}>
                     <Zap className="w-4 h-4 mr-2" />
                     BUY
-                  </Button>
+                  </Link>
                 )}
               </div>
             </div>

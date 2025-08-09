@@ -121,15 +121,27 @@ export default function LandingPage() {
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </Button>
               </Link>
-              <Link to="/inventory">
-                <Button
+                {window.localStorage.getItem("walletAddress") ? (
+                <Link to="/inventory">
+                  <Button
                   size="lg"
                   className="w-full sm:w-auto neon-button-purple px-8 py-4 text-lg font-semibold rounded-none font-mono uppercase tracking-wider transform hover:scale-105"
-                >
+                  >
                   <Play className="w-6 h-6 mr-3" />
                   SELL YOUR ITEMS
-                </Button>
-              </Link>
+                  </Button>
+                </Link>
+                ) : (
+                <Link to="/sign-up">
+                  <Button
+                  size="lg"
+                  className="w-full sm:w-auto neon-button-purple px-8 py-4 text-lg font-semibold rounded-none font-mono uppercase tracking-wider transform hover:scale-105"
+                  >
+                  <Play className="w-6 h-6 mr-3" />
+                  SELL YOUR ITEMS
+                  </Button>
+                </Link>
+                )}
             </div>
           </div>
         </div>
