@@ -1,6 +1,7 @@
 import { useCurrentAccount } from "@mysten/dapp-kit";
 import { useEffect, useRef, useState } from "react";
 import { getCookie, setCookie } from "@/lib/utils";
+import { createApiUrl } from "@/lib/backendUrl";
 
 export function SteamAuthHandler() {
 	const currentAccount = useCurrentAccount();
@@ -31,8 +32,7 @@ export function SteamAuthHandler() {
 			isProcessingReturn.current = true;
 			console.log('Processing Steam auth return:', { steamId, displayName, walletAddress });
 			
-			const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3111';
-			fetch(`${backendUrl}/api/user/add`, {
+			fetch(createApiUrl('/api/user/add'), {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({
@@ -72,7 +72,7 @@ export function SteamAuthHandler() {
 		}
 
 		const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3111';
-		fetch(`${backendUrl}/api/user/get_steamid`, {
+		fetch(createApiUrl('/api/user/get_steamid'), {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({ address: walletAddress }),
