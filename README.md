@@ -76,7 +76,7 @@ cp .env.example .env.local
 
 # Start development server
 pnpm dev
-
+```
 ## 📱 Application Structure
 
 ### Page Routes
