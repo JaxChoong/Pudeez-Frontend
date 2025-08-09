@@ -6,15 +6,7 @@ import { Button } from '../../components/ui/button';
 import { ExternalLink, Clock, CheckCircle, XCircle, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { getCookie } from '../../lib/utils';
-import steamAppsData from '../../data/steam_apps.json';
 import { useCancelTransaction } from '../../hooks/useCancelTransaction';
-
-interface SteamApp {
-  appid: number;
-  name: string;
-}
-
-const steamApps: SteamApp[] = steamAppsData as SteamApp[];
 
 interface EscrowTransaction {
   transactionId: string;
@@ -135,11 +127,6 @@ const EscrowPage: React.FC = () => {
       default:
         return <Badge variant="destructive" className="flex items-center gap-1"><XCircle className="w-3 h-3" /> Unknown</Badge>;
     }
-  };
-
-  const getGameNameByAppId = (appId: string): string => {
-    const game = steamApps.find(app => app.appid.toString() === appId);
-    return game ? game.name : 'Unknown Game';
   };
 
   const getTabData = () => {

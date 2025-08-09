@@ -15,7 +15,7 @@ export function useCancelTransaction() {
   const suiClient = useSuiClient();
 
   // Find locked payment and key objects owned by the buyer
-  const findLockedPaymentAndKey = async (escrowId: string) => {
+  const findLockedPaymentAndKey = async (_escrowId: string) => {
     if (!currentAccount?.address) {
       throw new Error("Wallet not connected");
     }

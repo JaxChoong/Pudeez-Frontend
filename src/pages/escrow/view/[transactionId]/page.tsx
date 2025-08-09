@@ -46,7 +46,7 @@ export default function EscrowViewPage() {
   const { transactionId } = useParams();
   const navigate = useNavigate();
   const currentAccount = useCurrentAccount();
-  const { cancelEscrow, verifyInventoryStatus, loading: cancelLoading, verifying: cancelVerifying, error: cancelError } = useCancelTransaction();
+  const { cancelEscrow, loading: cancelLoading, verifying: cancelVerifying, error: cancelError } = useCancelTransaction();
   const [transaction, setTransaction] = useState<EscrowTransactionDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

@@ -48,7 +48,7 @@ export default function EscrowPage() {
   const [escrowTransactions, setEscrowTransactions] = useState<EscrowTransaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("in-progress");
-  const { claimPayment, verifyTransfer, loading: claimLoading, verifying, error: claimError } = useClaimTransaction();
+  const { claimPayment, loading: claimLoading, verifying, error: claimError } = useClaimTransaction();
   const { cancelEscrow, verifyInventoryStatus, loading: cancelLoading, verifying: cancelVerifying, error: cancelError } = useCancelTransaction();
 
   // Handle cancel escrow
