@@ -135,11 +135,11 @@ export default function SellPage() {
 
     try {
       const assetData = {
-        appid: selectedGame?.appid || steamId, // Use selected game's appid or fallback to steamId
-        contextid: item.contextId,
-        assetid: item.assetId,
-        classid: item.classId,
-        instanceid: item.instanceId,
+        appid: selectedGame?.appid || parseInt(item.appid) || parseInt(steamId) || 0, // Ensure appid is a number
+        contextid: item.contextId || item.contextid, // Support both naming conventions
+        assetid: item.assetId || item.assetid,
+        classid: item.classId || item.classid,
+        instanceid: item.instanceId || item.instanceid,
         amount: item.amount || "1",
         walletAddress: currentAccount.address,
         icon_url: item.iconUrl ? item.iconUrl.replace('https://steamcommunity-a.akamaihd.net/economy/image/', '') : '',

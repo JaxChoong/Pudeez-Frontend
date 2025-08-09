@@ -158,6 +158,7 @@ export default function InventoryPage() {
     name: asset.name,
     amount: asset.amount,
     contextId: asset.contextid,
+    appid: asset.appid, // Include appid from Steam inventory response
     status: "inventory",
   })) || [];
 

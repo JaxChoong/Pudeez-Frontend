@@ -4,17 +4,24 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ShoppingCart, Gavel, Share, X} from "lucide-react";
+import { ShoppingCart, Gavel, Share, X, AlertCircle, CheckCircle } from "lucide-react";
 import Shimmer from "@/components/Shimmer";
 import { cn } from "@/lib/utils";
 import { useState, useEffect, useCallback } from "react";
+import { useCurrentAccount } from "@mysten/dapp-kit";
+import { useEscrowTransaction, validateSteamTradeUrl } from "@/hooks/useEscrowTransaction";
+import { useSteam } from "@/contexts/SteamContext";
 
 export default function BuyPage() {
   const [isImageLoading, setIsImageLoading] = useState(true);
   const [showBuyModal, setShowBuyModal] = useState(false);
   const [steamTradeUrl, setSteamTradeUrl] = useState("");
+  const [isTradeUrlValid, setIsTradeUrlValid] = useState(false);
   const { assetId } = useParams();
   const location = useLocation();
+  const currentAccount = useCurrentAccount();
+  const { createEscrow, loading: escrowLoading, error: escrowError } = useEscrowTransaction();
+  const { steamUser } = useSteam();
 
   // Parse initial item from location.state
   const initialItem =
@@ -64,6 +71,13 @@ export default function BuyPage() {
     if (!item && assetId) fetchAsset();
   }, [assetId, fetchAsset, item]);
 
+  // Handle trade URL change with validation
+  const handleTradeUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const url = e.target.value;
+    setSteamTradeUrl(url);
+    setIsTradeUrlValid(validateSteamTradeUrl(url));
+  };
+
   const handleImageLoad = () => setIsImageLoading(false);
 
   // Calculate costs for the modal
@@ -92,11 +106,99 @@ export default function BuyPage() {
   };
 
   // Handle confirm purchase
-  const handleConfirmPurchase = () => {
-    // This will be replaced with actual purchase logic later
-    console.log("Purchase confirmed with trade URL:", steamTradeUrl);
-    alert("Purchase functionality will be implemented soon!");
-    handleCloseModal();
+  const handleConfirmPurchase = async () => {
+    if (!currentAccount?.address) {
+      alert("Please connect your wallet first!");
+      return;
+    }
+
+    if (!validateSteamTradeUrl(steamTradeUrl)) {
+      alert("Please enter a valid Steam Trade URL");
+      return;
+    }
+
+    if (!item) {
+      alert("Item data not available");
+      return;
+    }
+
+    try {
+      // Extract price from item (remove "SUI" and convert to number)
+      const priceStr = item.price?.replace(/[^\d.]/g, '') || '0';
+      const priceInSui = parseFloat(priceStr);
+      
+      if (priceInSui <= 0) {
+        alert("Invalid item price");
+        return;
+      }
+
+      // Get seller address from item data
+      // This should be the wallet address of the seller, not Steam ID
+      const sellerAddress = item.walletAddress || item.seller;
+      if (!sellerAddress) {
+        alert("Seller wallet address not found");
+        return;
+      }
+
+      // Extract Steam information from item data
+      const appId = item.appid; // Remove fallback to 730
+      const classId = item.classid;
+      const instanceId = item.instanceid;
+      const sellerSteamId = item.sellerSteamId || item.steamId || item.steamID;
+      
+      // Use buyer Steam ID from global context instead of trade URL
+      const buyerSteamId = steamUser?.steamID;
+
+      // Validate required Steam data
+      if (!buyerSteamId) {
+        alert("Please log in with Steam before making a purchase");
+        return;
+      }
+
+      if (!appId) {
+        alert("Invalid item: missing game app ID");
+        return;
+      }
+
+      console.log('Escrow parameters:', {
+        seller: sellerAddress,
+        assetId: item.assetid || assetId,
+        assetName: item.title || item.name,
+        priceInSui,
+        appId,
+        sellerSteamId,
+        buyerSteamId,
+        tradeUrl: steamTradeUrl
+      });
+
+      // Create escrow transaction
+      const result = await createEscrow({
+        seller: sellerAddress,
+        assetId: item.assetid || assetId || "",
+        assetName: item.title || item.name || "Unknown Item",
+        assetAmount: 1, // Assuming 1 item for now
+        tradeUrl: steamTradeUrl,
+        priceInSui: priceInSui,
+        appId: appId,
+        contextId: item.contextid || "2", // Use contextid from item or default to 2
+        classId: classId,
+        instanceId: instanceId,
+        sellerSteamId: sellerSteamId,
+        buyerSteamId: buyerSteamId,
+      });
+
+      if (result.digest) {
+        alert(`Purchase initiated successfully! Transaction: ${result.digest}\nWalrus Blob ID: ${result.walrusBlobId}`);
+        handleCloseModal();
+        
+        // Optionally navigate to a transaction status page
+        // navigate(`/transaction/${result.digest}`);
+      }
+
+    } catch (error: any) {
+      console.error("Purchase failed:", error);
+      alert(`Purchase failed: ${error.message || "Unknown error"}`);
+    }
   };
 
   const imageUrl =
@@ -169,6 +271,9 @@ export default function BuyPage() {
                 { label: "Asset ID", value: item.assetid },
                 { label: "Blob ID", value: item.blobId },
                 { label: "App ID", value: item.appid },
+                { label: "Context ID", value: item.contextid },
+                { label: "Class ID", value: item.classid },
+                { label: "Instance ID", value: item.instanceid },
                 {
                   label: "Uploaded At",
                   value: item.uploadedAt
@@ -257,9 +362,33 @@ export default function BuyPage() {
                     type="url"
                     placeholder="https://steamcommunity.com/tradeoffer/new/?partner=..."
                     value={steamTradeUrl}
-                    onChange={(e) => setSteamTradeUrl(e.target.value)}
-                    className="w-full bg-black/40 border-white/20 text-white placeholder:text-gray-500 font-mono text-sm"
+                    onChange={handleTradeUrlChange}
+                    className={cn(
+                      "w-full bg-black/40 border-white/20 text-white placeholder:text-gray-500 font-mono text-sm",
+                      steamTradeUrl && !isTradeUrlValid ? "border-red-500" : "",
+                      steamTradeUrl && isTradeUrlValid ? "border-green-500" : ""
+                    )}
                   />
+                  
+                  {/* Validation feedback */}
+                  {steamTradeUrl && (
+                    <div className={cn(
+                      "flex items-center gap-2 text-sm",
+                      isTradeUrlValid ? "text-green-400" : "text-red-400"
+                    )}>
+                      {isTradeUrlValid ? (
+                        <>
+                          <CheckCircle className="w-4 h-4" />
+                          <span>Valid Steam Trade URL</span>
+                        </>
+                      ) : (
+                        <>
+                          <AlertCircle className="w-4 h-4" />
+                          <span>Invalid Steam Trade URL format</span>
+                        </>
+                      )}
+                    </div>
+                  )}
                   
                   {/* How to find trade URL link */}
                   <div className="flex items-center gap-2 text-sm">
@@ -299,6 +428,16 @@ export default function BuyPage() {
                   })()}
                 </div>
 
+                {/* Error display */}
+                {escrowError && (
+                  <div className="p-3 bg-red-500/20 border border-red-500/50 rounded-lg">
+                    <div className="flex items-center gap-2 text-red-400 text-sm">
+                      <AlertCircle className="w-4 h-4" />
+                      <span>{escrowError}</span>
+                    </div>
+                  </div>
+                )}
+
                 {/* Action Buttons */}
                 <div className="flex gap-3 pt-2">
                   <Button
@@ -310,10 +449,18 @@ export default function BuyPage() {
                   </Button>
                   <Button
                     onClick={handleConfirmPurchase}
-                    disabled={!steamTradeUrl.trim()}
+                    disabled={!steamTradeUrl.trim() || !isTradeUrlValid || escrowLoading || !currentAccount?.address}
                     className="flex-1 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {item.isAuction ? 'Place Bid' : 'Confirm Purchase'}
+                    {escrowLoading ? (
+                      "Processing..."
+                    ) : !currentAccount?.address ? (
+                      "Connect Wallet"
+                    ) : item.isAuction ? (
+                      "Place Bid"
+                    ) : (
+                      "Confirm Purchase"
+                    )}
                   </Button>
                 </div>
               </div>
