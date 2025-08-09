@@ -12,6 +12,8 @@ import ItemDetailsPage from "./pages/view/[assetId]/page"
 import BuyPage from "./pages/buy/[assetId]/page"
 import BidPage from "./pages/bid/[assetId]/page"
 import SignUpPage from "./pages/SignUpPage"
+import EscrowPage from "./pages/EscrowPage"
+import EscrowViewPage from "./pages/escrow/view/[transactionId]/page"
 import { useEffect } from "react"
 import { setCookie } from "@/lib/utils"
 import InventoryPage from "./pages/InventoryPage"
@@ -37,6 +39,8 @@ function App() {
           <Route path="/marketplace" element={<MarketplacePage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/cart" element={<CartPage />} />
+          <Route path="/escrow" element={<EscrowPage />} />
+          <Route path="/escrow/view/:transactionId" element={<EscrowViewPage />} />
           <Route path="/sell/:assetId" element={<SellPage />} />
           <Route path="/view/:assetId" element={<ItemDetailsPage />} />
           <Route path="/buy/:assetId" element={<BuyPage />} />

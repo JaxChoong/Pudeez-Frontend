@@ -20,6 +20,7 @@ import {
   X,
   Gamepad2,
   Zap,
+  Shield,
 } from "lucide-react"
 
 // Helper to get cookie value by name
@@ -119,7 +120,8 @@ export default function Navbar() {
   const navItems = [
     { path: "/marketplace", label: "NEXUS", icon: Search },
     { path: "/profile", label: "USER", icon: User },
-    {path: "/inventory", label: "INVENTORY", icon: Gamepad2 },
+    { path: "/inventory", label: "INVENTORY", icon: Gamepad2 },
+    { path: "/escrow", label: "ESCROW", icon: Shield },
   ]
 
   return (
