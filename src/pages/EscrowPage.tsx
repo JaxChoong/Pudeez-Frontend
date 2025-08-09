@@ -21,6 +21,7 @@ import {
 import { useCurrentAccount } from "@mysten/dapp-kit";
 import { cn } from "@/lib/utils";
 import { useClaimTransaction } from "@/hooks/useClaimTransaction";
+import { useCancelTransaction } from "@/hooks/useCancelTransaction";
 
 // Updated interface to match backend format
 interface EscrowTransaction {
@@ -48,6 +49,52 @@ export default function EscrowPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("in-progress");
   const { claimPayment, verifyTransfer, loading: claimLoading, verifying, error: claimError } = useClaimTransaction();
+  const { cancelEscrow, verifyInventoryStatus, loading: cancelLoading, verifying: cancelVerifying, error: cancelError } = useCancelTransaction();
+
+  // Handle cancel escrow
+  const handleCancel = async (transaction: EscrowTransaction) => {
+    try {
+      const result = await cancelEscrow({
+        escrowId: transaction.transactionId,
+        escrowObjectId: transaction.transactionId, // This should be the actual Sui object ID
+      });
+      
+      console.log('Cancel successful:', result);
+      // Refresh transactions after successful cancel
+      fetchEscrowTransactions();
+    } catch (error: any) {
+      console.error('Cancel failed:', error);
+      
+      // Handle special case where transfer has already occurred
+      if (error.message.includes('transfer has already occurred')) {
+        // Refresh transactions to reflect the completed status
+        fetchEscrowTransactions();
+      }
+    }
+  };
+
+  // Check inventory status for all in-progress escrows
+  const checkInventoryStatus = async () => {
+    if (!escrowTransactions.length) return;
+
+    console.log('Checking inventory status for all escrows...');
+    
+    const inProgressEscrows = escrowTransactions.filter(tx => tx.status === 'in-progress');
+    
+    for (const escrow of inProgressEscrows) {
+      try {
+        const status = await verifyInventoryStatus(escrow.transactionId);
+        
+        if (status.hasTransferOccurred) {
+          console.log(`Transfer detected for escrow ${escrow.transactionId}, marking as completed`);
+          // The backend will have already updated the status, so just refresh
+          await fetchEscrowTransactions();
+        }
+      } catch (error) {
+        console.warn(`Failed to check inventory for escrow ${escrow.transactionId}:`, error);
+      }
+    }
+  };
 
   // Handle claim payment
   const handleClaim = async (transaction: EscrowTransaction) => {
@@ -68,6 +115,11 @@ export default function EscrowPage() {
   // Determine if current user is seller for a transaction
   const isCurrentUserSeller = (transaction: EscrowTransaction): boolean => {
     return currentAccount?.address === transaction.seller;
+  };
+
+  // Determine if current user is buyer for a transaction
+  const isCurrentUserBuyer = (transaction: EscrowTransaction): boolean => {
+    return currentAccount?.address === transaction.buyer;
   };
 
   // Fetch escrow transactions from backend
@@ -101,7 +153,10 @@ export default function EscrowPage() {
 
   useEffect(() => {
     if (currentAccount?.address) {
-      fetchEscrowTransactions();
+      fetchEscrowTransactions().then(() => {
+        // Check inventory status after fetching escrows
+        checkInventoryStatus();
+      });
     } else {
       setEscrowTransactions([]);
       setIsLoading(false);
@@ -367,10 +422,42 @@ export default function EscrowPage() {
                                 )}
                               </Button>
                             )}
+
+                            {/* Cancel Button for Buyers in In-Progress Transactions */}
+                            {status === "in-progress" && isCurrentUserBuyer(transaction) && (
+                              <Button 
+                                onClick={() => handleCancel(transaction)}
+                                disabled={cancelLoading || cancelVerifying}
+                                size="sm" 
+                                className="bg-red-600 hover:bg-red-700 text-white w-full"
+                              >
+                                {cancelLoading ? (
+                                  <>
+                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                    Canceling...
+                                  </>
+                                ) : cancelVerifying ? (
+                                  <>
+                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                    Checking Inventory...
+                                  </>
+                                ) : (
+                                  <>
+                                    <XCircle className="w-4 h-4 mr-2" />
+                                    Cancel Escrow
+                                  </>
+                                )}
+                              </Button>
+                            )}
                             
                             {/* Show error if claim failed */}
                             {claimError && status === "in-progress" && isCurrentUserSeller(transaction) && (
                               <p className="text-red-400 text-xs mt-1">{claimError}</p>
+                            )}
+
+                            {/* Show error if cancel failed */}
+                            {cancelError && status === "in-progress" && isCurrentUserBuyer(transaction) && (
+                              <p className="text-red-400 text-xs mt-1">{cancelError}</p>
                             )}
                           </div>
                         </div>
