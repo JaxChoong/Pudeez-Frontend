@@ -135,7 +135,7 @@ export default function SellPage() {
 
     try {
       const assetData = {
-        appid: selectedGame?.appid || parseInt(item.appid) || parseInt(steamId) || 0, // Ensure appid is a number
+        appid: selectedGame?.appid || parseInt(item.appid || '') || parseInt(steamId) || 0, // Ensure appid is a number
         contextid: item.contextId || item.contextid, // Support both naming conventions
         assetid: item.assetId || item.assetid,
         classid: item.classId || item.classid,

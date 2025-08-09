@@ -3,17 +3,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/ta
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { ExternalLink, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { ExternalLink, Clock, CheckCircle, XCircle, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { getCookie } from '../../lib/utils';
-import steamAppsData from '../../data/steam_apps.json';
-
-interface SteamApp {
-  appid: number;
-  name: string;
-}
-
-const steamApps: SteamApp[] = steamAppsData as SteamApp[];
+import { useCancelTransaction } from '../../hooks/useCancelTransaction';
 
 interface EscrowTransaction {
   transactionId: string;
@@ -39,10 +32,61 @@ const EscrowPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { cancelEscrow, verifyInventoryStatus, loading: cancelLoading, verifying: cancelVerifying, error: cancelError } = useCancelTransaction();
 
   useEffect(() => {
-    fetchEscrows();
+    fetchEscrows().then(() => {
+      // Check inventory status after fetching escrows
+      checkInventoryStatus();
+    });
   }, []);
+
+  // Handle cancel escrow
+  const handleCancel = async (escrow: EscrowTransaction) => {
+    try {
+      const result = await cancelEscrow({
+        escrowId: escrow.transactionId,
+        escrowObjectId: escrow.transactionId, // This should be the actual Sui object ID
+      });
+      
+      console.log('Cancel successful:', result);
+      // Refresh transactions after successful cancel
+      fetchEscrows();
+    } catch (error: any) {
+      console.error('Cancel failed:', error);
+      
+      // Handle special case where transfer has already occurred
+      if (error.message.includes('transfer has already occurred')) {
+        // Refresh transactions to reflect the completed status
+        fetchEscrows();
+      }
+    }
+  };
+
+  // Check inventory status for all in-progress escrows
+  const checkInventoryStatus = async () => {
+    if (!escrows.length) return;
+
+    console.log('Checking inventory status for all escrows...');
+    
+    const inProgressEscrows = escrows.filter(escrow => 
+      escrow.status === 'initialized' || escrow.status === 'deposited'
+    );
+    
+    for (const escrow of inProgressEscrows) {
+      try {
+        const status = await verifyInventoryStatus(escrow.transactionId);
+        
+        if (status.hasTransferOccurred) {
+          console.log(`Transfer detected for escrow ${escrow.transactionId}, marking as completed`);
+          // The backend will have already updated the status, so just refresh
+          await fetchEscrows();
+        }
+      } catch (error) {
+        console.warn(`Failed to check inventory for escrow ${escrow.transactionId}:`, error);
+      }
+    }
+  };
 
   const fetchEscrows = async () => {
     try {
@@ -83,11 +127,6 @@ const EscrowPage: React.FC = () => {
       default:
         return <Badge variant="destructive" className="flex items-center gap-1"><XCircle className="w-3 h-3" /> Unknown</Badge>;
     }
-  };
-
-  const getGameNameByAppId = (appId: string): string => {
-    const game = steamApps.find(app => app.appid.toString() === appId);
-    return game ? game.name : 'Unknown Game';
   };
 
   const getTabData = () => {
@@ -171,7 +210,40 @@ const EscrowPage: React.FC = () => {
                 View Asset <ExternalLink className="w-3 h-3" />
               </Button>
             )}
+
+            {/* Cancel Button for Buyers in In-Progress Transactions */}
+            {(escrow.status === 'initialized' || escrow.status === 'deposited') && escrow.role === 'buyer' && (
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => handleCancel(escrow)}
+                disabled={cancelLoading || cancelVerifying}
+                className="flex items-center gap-1"
+              >
+                {cancelLoading ? (
+                  <>
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                    Canceling...
+                  </>
+                ) : cancelVerifying ? (
+                  <>
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                    Checking...
+                  </>
+                ) : (
+                  <>
+                    <XCircle className="w-3 h-3" />
+                    Cancel
+                  </>
+                )}
+              </Button>
+            )}
           </div>
+
+          {/* Show error if cancel failed */}
+          {cancelError && (escrow.status === 'initialized' || escrow.status === 'deposited') && escrow.role === 'buyer' && (
+            <p className="text-red-500 text-xs mt-2">{cancelError}</p>
+          )}
         </div>
       </CardContent>
     </Card>

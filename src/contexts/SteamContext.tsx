@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useCurrentAccount } from '@mysten/dapp-kit';
+import { createApiUrl } from '@/lib/backendUrl';
 
 interface SteamUser {
   steamID: string;
@@ -49,8 +50,7 @@ export function SteamProvider({ children }: SteamProviderProps) {
 
     setIsLoading(true);
     try {
-      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3111';
-      const response = await fetch(`${backendUrl}/api/user/get_steamid`, {
+      const response = await fetch(createApiUrl('/api/user/get_steamid'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ address: currentAccount.address }),
@@ -60,7 +60,7 @@ export function SteamProvider({ children }: SteamProviderProps) {
         const data = await response.json();
         if (data.steamID) {
           // Fetch additional Steam profile data
-          const profileResponse = await fetch(`${backendUrl}/api/user/get_steam_profile`, {
+          const profileResponse = await fetch(createApiUrl('/api/user/get_steam_profile'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ steamid: data.steamID }),
