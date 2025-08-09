@@ -142,14 +142,12 @@ Escrow Dashboard → Filter Transactions → View Details → Monitor Progress �
 ### Escrow System
 - **Smart Contract Protection**: Funds held in secure Sui smart contracts
 - **Atomic Transactions**: All-or-nothing transaction execution
-- **Dispute Resolution**: Built-in mechanisms for trade disputes
 - **Transparent History**: All transactions recorded on-chain
 
 ### Steam Integration Security
 - **OpenID Authentication**: Official Steam login system
 - **Inventory Verification**: Real-time Steam API validation
 - **Trade URL Validation**: Secure Steam trade link handling
-- **Rate Limiting**: API call limits and caching
 
 ## 🔄 State Management
 
@@ -197,6 +195,8 @@ interface SteamState {
 - **🔍 ZK Proofs**: zkLogin integration for Steam OpenID verification
 - **📊 Enhanced Analytics**: Advanced inventory tracking mechanisms
 - **🔑 API Key Management**: Secure Steam Web API key handling
+- **Dispute Resolution**: Built-in mechanisms for trade disputes
+- **Rate Limiting**: API call limits and caching
 
 
 ## 📦 Build & Deployment
