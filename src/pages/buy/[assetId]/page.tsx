@@ -1,10 +1,10 @@
 "use client";
-import { useParams, useLocation, useNavigate } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ShoppingCart, Gavel, Share, X, HelpCircle } from "lucide-react";
+import { ShoppingCart, Gavel, Share, X} from "lucide-react";
 import Shimmer from "@/components/Shimmer";
 import { cn } from "@/lib/utils";
 import { useState, useEffect, useCallback } from "react";
@@ -15,7 +15,6 @@ export default function BuyPage() {
   const [steamTradeUrl, setSteamTradeUrl] = useState("");
   const { assetId } = useParams();
   const location = useLocation();
-  const navigate = useNavigate();
 
   // Parse initial item from location.state
   const initialItem =
@@ -38,7 +37,19 @@ export default function BuyPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/walrus/asset/${assetId}`);
+      // First try to get from marketplace, fallback to walrus endpoint
+      let res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/marketplace/assets`);
+      if (res.ok) {
+        const data = await res.json();
+        const marketplaceAsset = data.assets?.find((asset: any) => asset.assetid === assetId);
+        if (marketplaceAsset) {
+          setItem(marketplaceAsset);
+          return;
+        }
+      }
+      
+      // Fallback to walrus endpoint
+      res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/walrus/asset/${assetId}`);
       if (!res.ok) throw new Error("Asset not found");
       const data = await res.json();
       setItem(data.asset);
@@ -98,8 +109,8 @@ export default function BuyPage() {
   if (error || !item) return <div className="text-center text-red-400 py-10">{error || "Asset not found"}</div>;
 
   const owner = {
-    name: item?.ownerName || "Unknown User",
-    avatar: item?.ownerAvatar || "https://via.placeholder.com/80",
+    name: item?.steamID || item?.ownerName || "Unknown User",
+    avatar: item?.steamAvatar || item?.ownerAvatar || "https://via.placeholder.com/80",
   };
 
   return (
@@ -157,14 +168,7 @@ export default function BuyPage() {
               {[
                 { label: "Asset ID", value: item.assetid },
                 { label: "Blob ID", value: item.blobId },
-                { label: "Game", value: item.game },
-                { label: "Game ID", value: item.gameId },
-                // { label: "Genre", value: item.genre },
-                // { label: "Condition", value: item.condition },
-                // { label: "Rarity", value: item.rarity },
-                // { label: "Likes", value: item.likes },
-                // { label: "Auction", value: item.isAuction ? "Yes" : "No" },
-                { label: "Wallet Address", value: item.walletAddress },
+                { label: "App ID", value: item.appid },
                 {
                   label: "Uploaded At",
                   value: item.uploadedAt

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Input } from "@/components/ui/input"
-import { Search, List, Grid3X3, Filter, Clock, Heart, TrendingUp, Zap, ShoppingCart, Bot, Gamepad2,Ban } from "lucide-react"
+import { Search, List, Grid3X3, Filter, Clock, Heart, TrendingUp, Zap, Bot, Gamepad2,Ban } from "lucide-react"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -36,15 +36,21 @@ export default function MarketplacePage() {
   useEffect(() => {
     const fetchMarketplaceAssets = async () => {
       try {
+        console.log('[MarketplacePage] Starting to fetch marketplace assets...')
         setIsLoadingAssets(true)
         setError(null)
         const response = await marketplaceService.getMarketplaceAssets(100, 0)
+        console.log('[MarketplacePage] Raw response from marketplaceService:', response)
+        console.log('[MarketplacePage] Assets array:', response.assets)
+        console.log('[MarketplacePage] Assets count:', response.assets?.length || 0)
         setMarketplaceAssets(response.assets)
+        console.log('[MarketplacePage] Set marketplace assets, state should update')
       } catch (err) {
-        console.error('Error fetching marketplace assets:', err)
+        console.error('[MarketplacePage] Error fetching marketplace assets:', err)
         setError('Failed to load marketplace assets. Please try again later.')
       } finally {
         setIsLoadingAssets(false)
+        console.log('[MarketplacePage] Finished loading assets')
       }
     }
 
@@ -91,31 +97,42 @@ export default function MarketplacePage() {
     },
   ]
 
-  const filteredItems = gameItems.filter((item) => {
+  console.log('[MarketplacePage] Current marketplaceAssets.length:', marketplaceAssets.length)
+  console.log('[MarketplacePage] Using gameItems:', gameItems.length > 0 ? `${gameItems.length} items` : 'no items')
+  console.log('[MarketplacePage] First few gameItems:', gameItems.slice(0, 3))
+
+  const filteredItems = gameItems.filter((item, index) => {
     const matchesSearch =
       item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.game.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesGenre = selectedGenre === "all" || item.genre === selectedGenre
-    const matchesGame = !selectedGame || item.gameId === selectedGame
-    return matchesSearch && matchesGenre && matchesGame
+
+    const matchesGenre = selectedGenre === "all" 
+    const matchesGame = selectedGame === "all" || selectedGame === null || item.gameId === selectedGame
+    
+    const passes = matchesSearch && matchesGenre && matchesGame
+    
+    // Debug log for first item
+    if (index === 0) {
+      console.log('[MarketplacePage] First item filter debug:', {
+        item: item.title,
+        matchesSearch,
+        matchesGenre, 
+        matchesGame,
+        passes,
+        searchTerm,
+        selectedGenre,
+        selectedGame,
+        itemGameId: item.gameId
+      })
+    }
+    
+    return passes
   })
 
-  const getRarityColor = (rarity: string) => {
-    switch (rarity) {
-      case "Arcana":
-      case "Unusual":
-        return "neon-border-purple bg-purple-500/20 text-purple-400"
-      case "Covert":
-      case "Limited":
-        return "neon-border-pink bg-pink-500/20 text-pink-400"
-      case "Classified":
-        return "neon-border bg-red-500/20 text-red-400"
-      case "Rare":
-        return "neon-border-cyan bg-cyan-500/20 text-cyan-400"
-      default:
-        return "neon-border bg-gray-500/20 text-gray-400"
-    }
-  }
+  console.log('[MarketplacePage] Filter criteria:', { searchTerm, selectedGenre, selectedGame })
+  console.log('[MarketplacePage] Total gameItems before filtering:', gameItems.length)
+  console.log('[MarketplacePage] Filtered items count:', filteredItems.length)
+  console.log('[MarketplacePage] Filtered items:', filteredItems.slice(0, 3))
 
   const renderGameItemCard = (item: any, isGridView = true) => {
     return (
@@ -139,7 +156,7 @@ export default function MarketplacePage() {
                   key={item.image || "/placeholder.svg"}
                 />
                 <div className="absolute top-3 left-3">
-                  <Badge className={getRarityColor(item.rarity)}>{item.rarity.toUpperCase()}</Badge>
+                  <Badge className="neon-border bg-blue-500/20 text-blue-400">STEAM</Badge>
                 </div>
                 <div className="absolute top-3 right-3 flex gap-2">
                   {item.isAuction && (
@@ -161,7 +178,7 @@ export default function MarketplacePage() {
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center text-gray-400 text-sm font-mono">
                     <Heart className="w-4 h-4 mr-1" />
-                    {item.likes}
+                    {item.steamName || 'Unknown User'}
                   </div>
                   <div className="text-right">
                     <div className="text-lg font-bold neon-text-pink font-mono">{item.price}</div>
@@ -212,10 +229,10 @@ export default function MarketplacePage() {
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
                   <h3 className="text-lg font-semibold neon-text-cyan font-mono">{item.title}</h3>
-                  <Badge className={getRarityColor(item.rarity)}>{item.rarity.toUpperCase()}</Badge>
+                  <Badge className="neon-border bg-blue-500/20 text-blue-400">STEAM</Badge>
                 </div>
                 <p className="text-sm text-gray-400 font-mono">{item.game}</p>
-                <p className="text-xs text-gray-500 font-mono">{item.condition}</p>
+                <p className="text-xs text-gray-500 font-mono">Owner: {item.steamName || 'Unknown User'}</p>
               </div>
               <div className="text-right">
                 <div className="text-xl font-bold neon-text-pink font-mono mb-1">{item.price}</div>

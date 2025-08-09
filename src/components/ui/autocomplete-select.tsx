@@ -2,13 +2,13 @@
 "use client";
 
 import * as React from "react";
-import { Check, ChevronDown, Search } from "lucide-react";
+import { Check, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import steamAppsData from "@/data/steam_apps.json";
 const steamApps: SteamApp[] = steamAppsData as SteamApp[];
 
 interface SteamApp {
-  appId: number;
+  appid: number;
   name: string;
 }
 
@@ -80,7 +80,7 @@ export function AutocompleteSelect({
           <div className="max-h-60 overflow-y-auto">
             {filteredApps.map((app) => (
               <div
-                key={app.appId}
+                key={app.appid}
                 className="relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-10 pr-4 text-sm outline-none hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
                 onClick={() => handleSelect(app)}
               >

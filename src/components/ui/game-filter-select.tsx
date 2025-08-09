@@ -2,7 +2,7 @@
 "use client";
 
 import * as React from "react";
-import { Check, ChevronDown, Search, X } from "lucide-react";
+import { Check,  Search, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import steamAppsData from "@/data/steam_apps.json";
 

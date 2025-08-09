@@ -16,15 +16,11 @@ import {
   Search,
   ShoppingCart,
   User,
-  MessageCircle,
-  History,
   Menu,
   X,
   Gamepad2,
-  Palette,
   Zap,
 } from "lucide-react"
-import path from "path"
 
 // Helper to get cookie value by name
 function getCookie(name: string): string {
