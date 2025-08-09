@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ShoppingCart, Gavel, Share, X, AlertCircle, CheckCircle } from "lucide-react";
+import { ShoppingCart, Share, X, AlertCircle, CheckCircle } from "lucide-react";
 import Shimmer from "@/components/Shimmer";
 import { cn } from "@/lib/utils";
 import { useState, useEffect, useCallback } from "react";
@@ -415,11 +415,6 @@ export default function BuyPage() {
                     <AlertCircle className="w-4 h-4 mr-2" />
                     Not Available
                   </>
-                ) : item.isAuction ? (
-                  <>
-                    <Gavel className="w-4 h-4 mr-2" />
-                    Place Bid
-                  </>
                 ) : (
                   <>
                     <ShoppingCart className="w-4 h-4 mr-2" />
@@ -442,7 +437,7 @@ export default function BuyPage() {
               {/* Modal Header */}
               <div className="flex items-center justify-between p-6 border-b border-white/10">
                 <h3 className="text-xl font-bold text-white">
-                  {item.isAuction ? 'Place Bid' : 'Purchase Item'}
+                  Purchase Item
                 </h3>
                 <button
                   onClick={handleCloseModal}
@@ -576,9 +571,7 @@ export default function BuyPage() {
                       "Processing..."
                     ) : !currentAccount?.address ? (
                       "Connect Wallet"
-                    ) : item.isAuction ? (
-                      "Place Bid"
-                    ) : (
+                    ): (
                       "Confirm Purchase"
                     )}
                   </Button>

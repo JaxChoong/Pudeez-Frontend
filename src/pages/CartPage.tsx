@@ -3,9 +3,8 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/seperator"
-import { ShoppingCart, Trash2, Plus, Minus, CreditCard, Wallet, Shield, Clock } from "lucide-react"
+import { ShoppingCart, Trash2, Plus, Minus, CreditCard, Wallet, Shield } from "lucide-react"
 
 export default function CartPage() {
   const [cartItems, setCartItems] = useState([
@@ -17,7 +16,6 @@ export default function CartPage() {
       image: "/placeholder.svg?height=120&width=120",
       seller: "ArtistX",
       quantity: 1,
-      isAuction: false,
     },
     {
       id: 2,
@@ -27,7 +25,6 @@ export default function CartPage() {
       image: "/placeholder.svg?height=120&width=120",
       seller: "GameDev",
       quantity: 1,
-      isAuction: false,
     },
     {
       id: 3,
@@ -37,8 +34,6 @@ export default function CartPage() {
       image: "/placeholder.svg?height=120&width=120",
       seller: "ModernArt",
       quantity: 1,
-      isAuction: true,
-      auctionEnds: "2h 34m",
     },
   ])
 
@@ -101,12 +96,6 @@ export default function CartPage() {
                             <p className="text-sm text-gray-400">by {item.seller}</p>
                           </div>
                           <div className="flex items-center gap-2">
-                            {item.isAuction && (
-                              <Badge className="bg-red-600 text-white">
-                                <Clock className="w-3 h-3 mr-1" />
-                                {item.auctionEnds}
-                              </Badge>
-                            )}
                             <Button
                               variant="ghost"
                               size="sm"

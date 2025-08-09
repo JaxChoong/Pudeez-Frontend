@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Input } from "@/components/ui/input"
-import { Search, List, Grid3X3, Filter, Clock, Heart, TrendingUp, Zap, Bot, Gamepad2,Ban } from "lucide-react"
+import { Search, List, Grid3X3, Filter, Heart, Zap, Bot, Gamepad2,Ban } from "lucide-react"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -90,7 +90,6 @@ export default function MarketplacePage() {
       genre: "other",
       rarity: "Common",
       condition: "New",
-      isAuction: false,
       likes: 0,
       timeLeft: null,
       steamMarketUrl: "#",
@@ -159,12 +158,6 @@ export default function MarketplacePage() {
                   <Badge className="neon-border bg-blue-500/20 text-blue-400">STEAM</Badge>
                 </div>
                 <div className="absolute top-3 right-3 flex gap-2">
-                  {item.isAuction && (
-                    <Badge className="neon-border bg-red-500/20 text-red-400">
-                      <Clock className="w-3 h-3 mr-1" />
-                      {item.timeLeft}
-                    </Badge>
-                  )}
                   <Button size="sm" variant="ghost" className="bg-black/50 hover:bg-black/70 text-pink-400 p-2">
                     <Heart className="w-4 h-4" />
                   </Button>
@@ -186,24 +179,14 @@ export default function MarketplacePage() {
                 </div>
 
                 <div className="grid grid-cols-[1fr_auto_auto] gap-2 mb-3">
-                  {item.isAuction ? (
-                        <Link to={`/bid/${item.assetid}`}
-                        state= { item }>
-                          <span className="neon-button-pink font-mono uppercase text-xs h-10 px-4 flex items-center justify-center bg-white text-black rounded-md hover:bg-pink-50 transition-all duration-300">
-                            <TrendingUp className="w-4 h-4 mr-2" />
-                            BID
-                          </span>
-                        </Link>
-                  ) : (
-                        <Link
-                          to={`/buy/${item.assetid}`}
-                          state= {{ item }}
-                          className="neon-button-cyan font-mono uppercase text-xs h-10 px-4 items-center justify-center flex bg-white text-black rounded-md hover:bg-cyan-100 transition-all duration-300"
-                        >
-                          <Zap className="w-4 h-4 mr-2" />
-                          BUY
-                        </Link>
-                  )}
+                  <Link
+                    to={`/buy/${item.assetid}`}
+                    state= {{ item }}
+                    className="neon-button-cyan font-mono uppercase text-xs h-10 px-4 items-center justify-center flex bg-white text-black rounded-md hover:bg-cyan-100 transition-all duration-300"
+                  >
+                    <Zap className="w-4 h-4 mr-2" />
+                    BUY
+                  </Link>
                   <Button
                     variant="outline"
                     className="neon-button-cyan bg-transparent w-10 h-10 p-0 flex items-center justify-center"
@@ -236,9 +219,6 @@ export default function MarketplacePage() {
               </div>
               <div className="text-right">
                 <div className="text-xl font-bold neon-text-pink font-mono mb-1">{item.price}</div>
-                <div className="h-4 font-mono">
-                  {item.isAuction && <div className="text-xs text-gray-400">CURRENT BID</div>}
-                </div>
               </div>
               <div className="flex gap-2">
                 <Button
@@ -248,19 +228,12 @@ export default function MarketplacePage() {
                   <Bot className="w-4 h-4 mr-1" />
                   AI
                 </Button>
-                {item.isAuction ? (
-                  <Button className="neon-button-pink font-mono uppercase text-xs h-8 px-4">
-                    <TrendingUp className="w-4 h-4 mr-2" />
-                    BID
-                  </Button>
-                ) : (
-                  <Link className="neon-button-cyan font-mono uppercase text-xs h-8 flex justify-center items-center px-4 bg-white text-black rounded-md hover:bg-cyan-100 transition-all duration-300"
-                        to={`/buy/${item.assetid}`}
-                        state={{item}}>
-                    <Zap className="w-4 h-4 mr-2" />
-                    BUY
-                  </Link>
-                )}
+                <Link className="neon-button-cyan font-mono uppercase text-xs h-8 flex justify-center items-center px-4 bg-white text-black rounded-md hover:bg-cyan-100 transition-all duration-300"
+                      to={`/buy/${item.assetid}`}
+                      state={{item}}>
+                  <Zap className="w-4 h-4 mr-2" />
+                  BUY
+                </Link>
               </div>
             </div>
           )}
@@ -418,11 +391,8 @@ export default function MarketplacePage() {
             <TabsTrigger value="all" className="data-[state=active]:neon-button-cyan font-mono uppercase text-xs">
               ALL ITEMS ({filteredItems.length})
             </TabsTrigger>
-            <TabsTrigger value="auction" className="data-[state=active]:neon-button-pink font-mono uppercase text-xs">
-              AUCTIONS ({filteredItems.filter((item) => item.isAuction).length})
-            </TabsTrigger>
             <TabsTrigger value="buy-now" className="data-[state=active]:neon-button-cyan font-mono uppercase text-xs">
-              BUY NOW ({filteredItems.filter((item) => !item.isAuction).length})
+              BUY NOW ({marketplaceAssets.length})
             </TabsTrigger>
           </TabsList>
           
@@ -440,22 +410,12 @@ export default function MarketplacePage() {
             </div>
           </TabsContent>
 
-          <TabsContent value="auction">
-            <div
-              className={viewMode === "grid" ? "grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" : "space-y-4"}
-            >
-              {filteredItems
-                .filter((item) => item.isAuction)
-                .map((item) => renderGameItemCard(item, viewMode === "grid"))}
-            </div>
-          </TabsContent>
 
           <TabsContent value="buy-now">
             <div
               className={viewMode === "grid" ? "grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" : "space-y-4"}
             >
               {filteredItems
-                .filter((item) => !item.isAuction)
                 .map((item) => renderGameItemCard(item, viewMode === "grid"))}
             </div>
           </TabsContent>

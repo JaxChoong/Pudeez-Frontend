@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link } from "react-router-dom"; 
-import { ExternalLink, Tag, Hammer, Box } from "lucide-react";
+import { ExternalLink, Tag, Box } from "lucide-react";
 import Shimmer from "@/components/Shimmer";
 import { useImageLoading } from "@/hooks/useImageLoading";
 import { cn } from "@/lib/utils";
@@ -194,22 +194,6 @@ export default function InventoryPage() {
       uploadedAt: asset.uploadedAt
     }));
 
-  const inAuctionNFTs = listedAssets
-    .filter(asset => asset.listingType === 'auction')
-    .map(asset => ({
-      assetId: asset.assetid,
-      classId: asset.classid,
-      instanceId: asset.instanceid,
-      iconUrl: asset.icon_url ? `https://steamcommunity-a.akamaihd.net/economy/image/${asset.icon_url}` : "/placeholder.svg",
-      name: asset.name || 'Unknown Item',
-      currentBid: formatSuiPrice(asset.price || '0'),
-      endsIn: "Ongoing",
-      collection: "Auction Item",
-      status: "auction",
-      blobId: asset.blobId,
-      walletAddress: asset.walletAddress,
-      uploadedAt: asset.uploadedAt
-    }));
 
 
   // Add loading and error states
@@ -230,9 +214,6 @@ export default function InventoryPage() {
             </TabsTrigger>
             <TabsTrigger value="on-sale" className="data-[state=active]:bg-purple-600">
               On Sale ({onSaleNFTs.length})
-            </TabsTrigger>
-            <TabsTrigger value="in-auction" className="data-[state=active]:bg-purple-600">
-              In Auction ({inAuctionNFTs.length})
             </TabsTrigger>
           </TabsList>
 
@@ -305,15 +286,6 @@ export default function InventoryPage() {
               ))}
             </div>
           </TabsContent>
-
-          {/* In Auction Items */}
-          <TabsContent value="in-auction">
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {inAuctionNFTs.map((item) => (
-                <NFTCard key={item.assetId} item={item} isLoading={isLoading} handleImageLoad={handleImageLoad} />
-              ))}
-            </div>
-          </TabsContent>
         </Tabs>
       </div>
     </div>
@@ -343,11 +315,6 @@ function NFTCard({ item, isLoading, handleImageLoad }: { item: any, isLoading: b
               <Tag className="w-3 h-3 mr-1" /> For Sale
             </Badge>
           )}
-          {item.status === "auction" && (
-            <Badge className="absolute top-2 left-2 bg-purple-500/80 hover:bg-purple-500/90">
-              <Hammer className="w-3 h-3 mr-1" /> Auction
-            </Badge>
-          )}
           {item.status === "inventory" && (
             <Badge className="absolute top-2 left-2 bg-blue-500/80 hover:bg-blue-500/90">
               <Box className="w-3 h-3 mr-1" /> Inventory
@@ -366,18 +333,6 @@ function NFTCard({ item, isLoading, handleImageLoad }: { item: any, isLoading: b
             <div className="mb-1">
               {item.status === "sale" && (
                 <div className="text-lg font-bold text-white">{item.price}</div>
-              )}
-              {item.status === "auction" && (
-                <div>
-                  <div className="flex items-center justify-between text-sm mb-0.5">
-                    <span className="text-gray-300">Current Bid</span>
-                    <span className="text-gray-300">Ends In</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-lg font-bold text-white">{item.currentBid}</span>
-                    <span className="text-sm font-medium text-purple-300">{item.endsIn}</span>
-                  </div>
-                </div>
               )}
             </div>
           </div>

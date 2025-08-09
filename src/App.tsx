@@ -10,7 +10,6 @@ import CartPage from "./pages/CartPage"
 import SellPage from "./pages/sell/[assetId]/page"
 import ItemDetailsPage from "./pages/view/[assetId]/page"
 import BuyPage from "./pages/buy/[assetId]/page"
-import BidPage from "./pages/bid/[assetId]/page"
 import SignUpPage from "./pages/SignUpPage"
 import EscrowPage from "./pages/escrow/page"
 import EscrowViewPage from "./pages/escrow/view/[transactionId]/page"
@@ -44,7 +43,6 @@ function App() {
           <Route path="/sell/:assetId" element={<SellPage />} />
           <Route path="/view/:assetId" element={<ItemDetailsPage />} />
           <Route path="/buy/:assetId" element={<BuyPage />} />
-          <Route path="/bid/:assetId" element={<BidPage />} />
           <Route path="/sign-up" element={<SignUpPage />} />
           <Route path="/inventory" element={<InventoryPage />} />
           

@@ -8,8 +8,7 @@ import { useSteam } from "@/contexts/SteamContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Tag, Hammer, Clock } from "lucide-react";
+import { Tag } from "lucide-react";
 import Shimmer from "@/components/Shimmer";
 import { cn } from "@/lib/utils";
 import steamAppsData from "@/data/steam_apps.json";
@@ -54,10 +53,7 @@ export default function SellPage() {
     console.log('SellPage - steamUser:', steamUser);
   }, [currentAccount, steamUser]);
   
-  const [listingType, setListingType] = useState<'sale' | 'auction'>('sale');
   const [price, setPrice] = useState('');
-  const [minBid, setMinBid] = useState('');
-  const [auctionDuration, setAuctionDuration] = useState('24');
   const [description, setDescription] = useState('');
   const [isImageLoading, setIsImageLoading] = useState(true);
   const [item] = useState<SteamAsset | null>(location.state?.item || null);
@@ -120,13 +116,8 @@ export default function SellPage() {
     }
 
 
-    if (listingType === 'sale' && !price) {
+    if (!price) {
       setError('Please enter a sale price');
-      return;
-    }
-
-    if (listingType === 'auction' && !minBid) {
-      setError('Please enter a minimum bid amount');
       return;
     }
 
@@ -135,7 +126,7 @@ export default function SellPage() {
 
     try {
       const assetData = {
-        appid: selectedGame?.appid || parseInt(item.appid) || parseInt(steamId) || 0, // Ensure appid is a number
+        appid: selectedGame?.appid || parseInt(item.appid || '') || parseInt(steamId) || 0, // Ensure appid is a number
         contextid: item.contextId || item.contextid, // Support both naming conventions
         assetid: item.assetId || item.assetid,
         classid: item.classId || item.classid,
@@ -144,10 +135,9 @@ export default function SellPage() {
         walletAddress: currentAccount.address,
         icon_url: item.iconUrl ? item.iconUrl.replace('https://steamcommunity-a.akamaihd.net/economy/image/', '') : '',
         name: item.name || 'Unknown Item',
-        price: listingType === 'sale' ? price : minBid,
-        listingType,
+        price: price,
+        listingType: 'sale' as const,
         description,
-        auctionDuration: listingType === 'auction' ? auctionDuration : null,
         steamID: steamUser?.steamID || '',
         steamName: steamUser?.steamName || '',
         steamAvatar: steamUser?.avatar || ''
@@ -273,7 +263,6 @@ export default function SellPage() {
                 price: assetData.price,
                 listingType: assetData.listingType,
                 description: assetData.description,
-                auctionDuration: assetData.auctionDuration,
                 blobId,
                 signature: result.signature,
                 steamID: assetData.steamID,
@@ -363,79 +352,29 @@ export default function SellPage() {
             
                 {/* Steam ID Input (hidden but included in form submission) */}
                 <input type="hidden" name="appid" value={steamId} />
-                <Tabs defaultValue="sale" onValueChange={(value) => setListingType(value as 'sale' | 'auction')}>
-                  <TabsList className="grid w-full grid-cols-2 mb-6">
-                    <TabsTrigger value="sale">
-                      <Tag className="w-4 h-4 mr-2" /> Fixed Price
-                    </TabsTrigger>
-                    <TabsTrigger value="auction">
-                      <Hammer className="w-4 h-4 mr-2" /> Auction
-                    </TabsTrigger>
-                  </TabsList>
-
-                  <TabsContent value="sale">
-                    <div className="space-y-4 mb-4">
-                      <div>
-                        <p className="text-sm text-white mb-2">Price (Sui)</p>
-                        <Input
-                          type="number"
-                          placeholder="0.00"
-                          value={price}
-                          onChange={(e) => setPrice(e.target.value)}
-                          required={listingType === 'sale'}
-                        />
-                      </div>
+                
+                {/* Fixed Price Section */}
+                <div className="space-y-4 mb-6">
+                  <div>
+                    <div className="flex items-center gap-2 mb-4">
+                      <Tag className="w-5 h-5 text-purple-400" />
+                      <h3 className="text-lg font-semibold text-white">Fixed Price Sale</h3>
                     </div>
-                  </TabsContent>
-
-                  <TabsContent value="auction">
-                    <div className="space-y-4 mb-4">
-                      <div>
-                        <p className="text-sm text-white mb-2">Minimum Bid (Sui)</p>
-                        <Input
-                          type="number"
-                          placeholder="0.00"
-                          value={minBid}
-                          onChange={(e) => setMinBid(e.target.value)}
-                          required={listingType === 'auction'}
-                        />
-                      </div>
-
-                      <div>
-                        <p className="text-sm text-white mb-2">Auction Duration</p>
-                        <div className="grid grid-cols-3 gap-2">
-                          <Button
-                            type="button"
-                            variant={auctionDuration === '24' ? 'default' : 'outline'}
-                            className="flex flex-col items-center h-auto py-2"
-                            onClick={() => setAuctionDuration('24')}
-                          >
-                            <Clock className="w-4 h-4 mb-1" />
-                            <span className="text-xs">24 Hours</span>
-                          </Button>
-                          <Button
-                            type="button"
-                            variant={auctionDuration === '72' ? 'default' : 'outline'}
-                            className="flex flex-col items-center h-auto py-2"
-                            onClick={() => setAuctionDuration('72')}
-                          >
-                            <Clock className="w-4 h-4 mb-1" />
-                            <span className="text-xs">3 Days</span>
-                          </Button>
-                          <Button
-                            type="button"
-                            variant={auctionDuration === '168' ? 'default' : 'outline'}
-                            className="flex flex-col items-center h-auto py-2"
-                            onClick={() => setAuctionDuration('168')}
-                          >
-                            <Clock className="w-4 h-4 mb-1" />
-                            <span className="text-xs">7 Days</span>
-                          </Button>
-                        </div>
-                      </div>
+                    <div>
+                      <p className="text-sm text-white mb-2">Price (SUI)</p>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        placeholder="Enter price in SUI (e.g. 1.50)"
+                        value={price}
+                        onChange={(e) => setPrice(e.target.value)}
+                        required
+                        className="bg-white/5 border-white/10 text-white"
+                      />
                     </div>
-                  </TabsContent>
-                </Tabs>
+                  </div>
+                </div>
 
                 <div className="mt-4 mb-6">
                   <p className="text-sm text-white mb-2">Description</p>
@@ -474,7 +413,7 @@ export default function SellPage() {
                     disabled={isSubmitting || !currentAccount}
                     className="bg-purple-600 hover:bg-purple-700"
                   >
-                    {isSubmitting ? 'Listing...' : (listingType === 'sale' ? 'Pudeez for Sale' : 'Start Auction')}
+                    {isSubmitting ? 'Listing...' : 'List for Sale'}
                   </Button>
                 </div>
               </form>
