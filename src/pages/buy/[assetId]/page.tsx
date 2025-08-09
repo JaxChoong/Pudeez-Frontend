@@ -17,6 +17,8 @@ export default function BuyPage() {
   const [showBuyModal, setShowBuyModal] = useState(false);
   const [steamTradeUrl, setSteamTradeUrl] = useState("");
   const [isTradeUrlValid, setIsTradeUrlValid] = useState(false);
+  const [isCheckingAvailability, setIsCheckingAvailability] = useState(false);
+  const [availabilityError, setAvailabilityError] = useState<string | null>(null);
   const { assetId } = useParams();
   const location = useLocation();
   const currentAccount = useCurrentAccount();
@@ -68,7 +70,12 @@ export default function BuyPage() {
   }, [assetId]);
 
   useEffect(() => {
-    if (!item && assetId) fetchAsset();
+    if (!item && assetId) {
+      fetchAsset();
+    } else if (item && assetId) {
+      // Check availability when item is loaded
+      checkAssetAvailability();
+    }
   }, [assetId, fetchAsset, item]);
 
   // Handle trade URL change with validation
@@ -80,6 +87,28 @@ export default function BuyPage() {
 
   const handleImageLoad = () => setIsImageLoading(false);
 
+  // Helper function to format SUI amounts with appropriate decimal places
+  const formatSuiAmount = (amount: number): string => {
+    if (amount === 0) return '0';
+    
+    // For very small amounts, show 8 decimal places to capture tiny fees
+    if (amount < 0.01) {
+      return amount.toFixed(8).replace(/\.?0+$/, ''); // Remove trailing zeros
+    }
+    // For small amounts, show 6 decimal places
+    else if (amount < 0.1) {
+      return amount.toFixed(6).replace(/\.?0+$/, ''); // Remove trailing zeros
+    }
+    // For regular amounts, show 4 decimal places
+    else if (amount < 1) {
+      return amount.toFixed(4).replace(/\.?0+$/, ''); // Remove trailing zeros
+    }
+    // For larger amounts, show 3 decimal places
+    else {
+      return amount.toFixed(3).replace(/\.?0+$/, ''); // Remove trailing zeros
+    }
+  };
+
   // Calculate costs for the modal
   const calculateCosts = () => {
     const basePrice = parseFloat(item?.price?.replace(/[^\d.]/g, '') || '0');
@@ -88,14 +117,78 @@ export default function BuyPage() {
     const total = basePrice + feeAmount;
     
     return {
-      basePrice: basePrice.toFixed(3),
-      feeAmount: feeAmount.toFixed(3),
-      total: total.toFixed(3)
+      basePrice: formatSuiAmount(basePrice),
+      feeAmount: formatSuiAmount(feeAmount),
+      total: formatSuiAmount(total)
     };
   };
 
-  // Handle buy button click
-  const handleBuyClick = () => {
+  // Check asset availability in seller's Steam inventory
+  const checkAssetAvailability = async () => {
+    if (!assetId) return false;
+
+    setIsCheckingAvailability(true);
+    setAvailabilityError(null);
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/assets/${assetId}/availability`);
+      
+      if (!response.ok) {
+        if (response.status === 404) {
+          throw new Error('Asset not found in database');
+        } else if (response.status === 503) {
+          // Steam API not available, continue anyway but show warning
+          console.warn('Steam inventory checking not available');
+          return true;
+        }
+        throw new Error(`Failed to check availability: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      
+      if (!data.available) {
+        // Asset is no longer available, remove it from marketplace
+        setAvailabilityError('This asset is no longer available in the seller\'s inventory.');
+        
+        // Call backend to remove the asset
+        try {
+          await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/assets/${assetId}/remove-unavailable`, {
+            method: 'DELETE',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              reason: 'Asset no longer in seller inventory'
+            })
+          });
+          console.log('Unavailable asset removed from marketplace');
+        } catch (removeError) {
+          console.error('Failed to remove unavailable asset:', removeError);
+        }
+        
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Error checking asset availability:', error);
+      setAvailabilityError(error instanceof Error ? error.message : 'Failed to check asset availability');
+      return false;
+    } finally {
+      setIsCheckingAvailability(false);
+    }
+  };
+
+  // Handle buy button click with availability check
+  const handleBuyClick = async () => {
+    // First check if the asset is still available
+    const isAvailable = await checkAssetAvailability();
+    
+    if (!isAvailable) {
+      // Don't show the modal if asset is not available
+      return;
+    }
+
     setShowBuyModal(true);
   };
 
@@ -180,6 +273,7 @@ export default function BuyPage() {
         tradeUrl: steamTradeUrl,
         priceInSui: priceInSui,
         appId: appId,
+        iconUrl: item.icon_url || "",
         contextId: item.contextid || "2", // Use contextid from item or default to 2
         classId: classId,
         instanceId: instanceId,
@@ -251,7 +345,12 @@ export default function BuyPage() {
             </div>
               <div className="pt-2">
                 <p className="text-gray-400">Price</p>
-                <p className="text-2xl font-bold">{item.price || "-"}</p>
+                <p className="text-2xl font-bold">
+                  {item.price ? 
+                    `${formatSuiAmount(parseFloat(item.price.replace(/[^\d.]/g, '') || '0'))} SUI` 
+                    : "-"
+                  }
+                </p>
               </div>
             <div className="flex items-center space-x-4">
               <Avatar className="w-10 h-10">
@@ -289,13 +388,34 @@ export default function BuyPage() {
             </div>
 
 
+            {/* Availability Error Display */}
+            {availabilityError && (
+              <div className="p-3 bg-red-500/20 border border-red-500/50 rounded-lg">
+                <div className="flex items-center gap-2 text-red-400 text-sm">
+                  <AlertCircle className="w-4 h-4" />
+                  <span>{availabilityError}</span>
+                </div>
+              </div>
+            )}
+
             {/* Action Buttons */}
             <div className="flex space-x-4 pt-4">
               <Button 
-                className="flex-1 bg-purple-600 hover:bg-purple-700"
+                className="flex-1 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={handleBuyClick}
+                disabled={isCheckingAvailability || !!availabilityError}
               >
-                {item.isAuction ? (
+                {isCheckingAvailability ? (
+                  <>
+                    <div className="w-4 h-4 mr-2 animate-spin border-2 border-white border-t-transparent rounded-full"></div>
+                    Checking Availability...
+                  </>
+                ) : availabilityError ? (
+                  <>
+                    <AlertCircle className="w-4 h-4 mr-2" />
+                    Not Available
+                  </>
+                ) : item.isAuction ? (
                   <>
                     <Gavel className="w-4 h-4 mr-2" />
                     Place Bid

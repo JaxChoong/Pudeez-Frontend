@@ -70,7 +70,8 @@ export default function ProfilePage() {
 
     const fetchSteamProfileId = async () => {
       try {
-        const response = await fetch(`http://localhost:3111/api/user/get_steam_profile`, {
+        const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3111';
+        const response = await fetch(`${backendUrl}/api/user/get_steam_profile`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ address: walletAddress }),
