@@ -21,7 +21,6 @@ Pudeez is a decentralized marketplace that bridges traditional Steam gaming with
 - **🔒 Secure Trading**: Blockchain-powered escrow protection
 - **💎 Rare Items**: Trade discontinued and collectible Steam items
 - **👥 Community Market**: Peer-to-peer trading marketplace
-- **⚡ Zero Fees**: No platform fees for trading
 - **🌐 Multi-Wallet Support**: zkLogin (Enoki) and external wallets
 
 ## 🏗️ Architecture
@@ -46,10 +45,10 @@ graph TB
     A[React + TypeScript Frontend] --> B[Sui dApp Kit]
     B --> C[Sui Blockchain]
     A --> D[Steam Web API]
-    C --> E[Smart Contracts]
+    C --> E[Escrow Package]
     E --> F[Escrow System]
     D --> G[Item Verification]
-    A --> H[IPFS Storage]
+    A --> H[Walrus Storage]
 ```
 
 ## 🛠️ Installation & Setup
@@ -120,7 +119,7 @@ src/
 
 ### 1. New User Onboarding
 ```
-Landing Page → Sign Up → Steam Connection → Wallet Setup → Marketplace
+Landing Page → Sign Up → Wallet Setup (zkLogin/External Wallet) → Steam Connection  → Marketplace
 ```
 
 ### 2. Item Purchase
@@ -192,33 +191,13 @@ interface SteamState {
 ## 🚧 Future Implementations
 
 ### Planned Features
-- **🤖 AI Agent Identity**: Autonomous trading agents
+- **🤖 AI Chatbot/Ai Agent (ElizaOS)**: Autonomous trading agents 
+- **🤖 AI Agent Identity**: Uniquely identified AI Agents
 - **🌍 Internationalization**: Multi-language support with react-i18next
 - **🔍 ZK Proofs**: zkLogin integration for Steam OpenID verification
 - **📊 Enhanced Analytics**: Advanced inventory tracking mechanisms
 - **🔑 API Key Management**: Secure Steam Web API key handling
 
-### Roadmap
-- Q1 2025: AI Agent integration
-- Q2 2025: Multi-language support
-- Q3 2025: Advanced escrow features
-- Q4 2025: Mobile app development
-
-## 🧪 Testing
-
-```bash
-# Run unit tests
-pnpm test
-
-# Run integration tests
-pnpm test:integration
-
-# Run E2E tests
-pnpm test:e2e
-
-# Test coverage
-pnpm test:coverage
-```
 
 ## 📦 Build & Deployment
 
