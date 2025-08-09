@@ -17,8 +17,11 @@ import {
   DollarSign,
   FileText,
   Link as LinkIcon,
-  RefreshCw
+  RefreshCw,
+  Loader2
 } from "lucide-react";
+import { useCurrentAccount } from "@mysten/dapp-kit";
+import { useCancelTransaction } from "@/hooks/useCancelTransaction";
 
 interface EscrowTransactionDetail {
   transactionId: string;
@@ -42,6 +45,8 @@ interface EscrowTransactionDetail {
 export default function EscrowViewPage() {
   const { transactionId } = useParams();
   const navigate = useNavigate();
+  const currentAccount = useCurrentAccount();
+  const { cancelEscrow, verifyInventoryStatus, loading: cancelLoading, verifying: cancelVerifying, error: cancelError } = useCancelTransaction();
   const [transaction, setTransaction] = useState<EscrowTransactionDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -85,6 +90,30 @@ export default function EscrowViewPage() {
 
     fetchTransactionDetail();
   }, [transactionId]);
+
+  // Handle cancel escrow
+  const handleCancel = async () => {
+    if (!transaction) return;
+    
+    try {
+      const result = await cancelEscrow({
+        escrowId: transaction.transactionId,
+        escrowObjectId: transaction.transactionId, // This should be the actual Sui object ID
+      });
+      
+      console.log('Cancel successful:', result);
+      // Navigate back to escrow list after successful cancel
+      navigate('/escrow');
+    } catch (error: any) {
+      console.error('Cancel failed:', error);
+      
+      // Handle special case where transfer has already occurred
+      if (error.message.includes('transfer has already occurred')) {
+        // Refresh transaction to reflect the completed status
+        window.location.reload();
+      }
+    }
+  };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -318,6 +347,40 @@ export default function EscrowViewPage() {
               <p className="text-gray-300">{transaction.description}</p>
             </CardContent>
           </Card>
+        )}
+
+        {/* Action Buttons */}
+        {transaction && (transaction.status === 'initialized' || transaction.status === 'deposited') && 
+         currentAccount?.address && currentAccount.address === transaction.buyer && (
+          <div className="mt-8 text-center">
+            <Button
+              onClick={handleCancel}
+              disabled={cancelLoading || cancelVerifying}
+              className="bg-red-600 hover:bg-red-700 text-white mr-4"
+            >
+              {cancelLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Canceling Escrow...
+                </>
+              ) : cancelVerifying ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Checking Inventory...
+                </>
+              ) : (
+                <>
+                  <XCircle className="w-4 h-4 mr-2" />
+                  Cancel Escrow
+                </>
+              )}
+            </Button>
+            
+            {/* Show error if cancel failed */}
+            {cancelError && (
+              <p className="text-red-400 text-sm mt-2">{cancelError}</p>
+            )}
+          </div>
         )}
 
         {/* Blockchain Link */}
